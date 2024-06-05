@@ -4,14 +4,15 @@
     <div style="--wails-draggable:no-drag;">
       <div class="container">
         <div class="main">
-          <Sidebar/>
-          <router-view class="plr20 ptb10" />
+          <Sidebar style="width: 160px;"/>
+          <router-view class="plr20 ptb20 overflow-hidden" style="flex: 1;"/>
         </div>
-        <div class="footer flex-items-center plr20">
-          <span class="plr2">FOOTER</span>
-          <a class="plr2" target="_blank" href="https://github.com">github</a>
-          <a class="plr2" target="_blank" href="https://github.com">github</a>
-          <a class="plr2" target="_blank" href="https://github.com">github</a>
+        <div class="footer flex-items-center flex-items-between plr20">
+          <div>
+            <text class="">版本</text>&nbsp;
+            <span class="plr2">v1.0.0</span>
+          </div>
+          <div>{{ clock }}</div>
         </div>
       </div>
     </div>
@@ -19,19 +20,23 @@
 </template>
 
 <script>
-import {defineComponent, onBeforeMount} from "vue";
+import {defineComponent, onBeforeMount, ref} from "vue";
 import Head from './components/Head.vue'
 import {useRoute, useRouter} from "vue-router";
 import Sidebar from "./components/Sidebar.vue";
 
 let route = null
 let router = null
+let clock = ref(null)
 
 const onBeforeMountHandler = () => {
+  timeClock()
+}
 
-  console.log('[onBeforeMountHandler1]', route)
-  console.log('[onBeforeMountHandler2]', router)
-  console.log('[onBeforeMountHandler3]', router.getRoutes())
+const timeClock = () => {
+  setInterval(() => {
+    clock.value = new Date()
+  }, 2000)
 }
 
 export default defineComponent({
@@ -40,7 +45,9 @@ export default defineComponent({
     route = useRoute()
     router = useRouter()
     onBeforeMount(onBeforeMountHandler)
-    return {}
+    return {
+      clock,
+    }
   },
 })
 
@@ -68,8 +75,10 @@ export default defineComponent({
     display: flex;
     flex-direction: row;
     flex: 1;
+    overflow: hidden;
   }
-  .footer{
+
+  .footer {
     height: 38px;
     font-size: 12px;
     background-color: ghostwhite;

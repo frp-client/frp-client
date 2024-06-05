@@ -57,3 +57,7 @@ func (a *App) Quit() {
 func (a *App) Hidden() {
 	runtime.Hide(a.ctx)
 }
+
+func (a *App) OpenUrl(openUrl string) {
+	utils.OpenUrl(openUrl)
+}

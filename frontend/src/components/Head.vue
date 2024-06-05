@@ -9,9 +9,11 @@
         <span class="title">frp客户端</span>
       </div>
       <div class="flex-items-center">
+        <!--
         <Icon class="icon menu" size="24">
           <MenuFilled/>
         </Icon>
+        -->
         <Icon class="icon minus" size="24" @click="Hidden()">
           <HorizontalRuleFilled/>
         </Icon>

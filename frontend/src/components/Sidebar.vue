@@ -84,7 +84,7 @@ export default defineComponent({
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: 160px;
+
 
   .avatar {
     margin-top: 40px;
