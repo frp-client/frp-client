@@ -16,6 +16,11 @@ const routes = [
         name: 'setting',
         component: () => import('../views/setting.vue')
     },
+    {
+        path: '/proxy',
+        name: 'proxy',
+        component: () => import('../views/proxy.vue')
+    },
 ]
 
 export default createRouter({
