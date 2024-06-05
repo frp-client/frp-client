@@ -1,7 +1,7 @@
 <template>
   <div>
     <Head style="--wails-draggable:drag"></Head>
-    <div style="--wails-draggable:no-drag">
+    <div style="--wails-draggable:no-drag" class="plr20 ptb10">
       <router-view />
     </div>
   </div>

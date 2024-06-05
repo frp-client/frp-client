@@ -1,4 +1,6 @@
 html {
+    overflow-y: hidden !important;
+    /* vuetify 会设置这破玩意 */
 }
 
 body {
@@ -18,4 +20,32 @@ body {
 
 #app {
     height: 100vh;
+}
+
+.plr20 {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.ptb20 {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.ptb10 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/** 设置子元素左右对其 **/
+.flex-items-between {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+/*元素上下居中*/
+.flex-items-center {
+    display: flex;
+    align-items: center;
 }
