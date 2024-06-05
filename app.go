@@ -35,7 +35,7 @@ func (a *App) systemTray() {
 	})
 	systray.AddSeparator()
 	systray.AddMenuItem("退出", "Quit The Program").Click(func() {
-		runtime.Show(a.ctx)
+		runtime.Quit(a.ctx)
 	})
 	systray.SetOnDClick(func(menu systray.IMenu) {
 		runtime.Show(a.ctx)

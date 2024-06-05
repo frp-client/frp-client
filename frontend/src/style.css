@@ -49,3 +49,22 @@ body {
     display: flex;
     align-items: center;
 }
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-align-items-center {
+    align-items: center;
+}
+
+.text-align-center {
+    text-align: center;
+}
+
+.plr2 {
+    padding-left: 2px;
+    padding-right: 2px;
+
+}
