@@ -76,7 +76,14 @@ body {
 .plr2 {
     padding-left: 2px;
     padding-right: 2px;
-
+}
+.mlr2 {
+    margin-left: 2px;
+    margin-right: 2px;
+}
+.mlr6 {
+    margin-left: 6px;
+    margin-right: 6px;
 }
 
 .overflow-hidden {
@@ -89,7 +96,6 @@ body {
     color: #000000;
     text-decoration: none;
     border-bottom: 2px dashed;
-    margin: 0 3px 0 3px;
 }
 
 .alink:hover {

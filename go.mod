@@ -5,6 +5,7 @@ go 1.22
 toolchain go1.22.4
 
 require (
+	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/energye/systray v1.0.2
 	github.com/frp-client/frp v0.0.0-20240617081446-1b311e7adae9
 	github.com/labstack/gommon v0.4.0

@@ -61,3 +61,11 @@ func (a *App) Hidden() {
 func (a *App) OpenUrl(openUrl string) {
 	utils.OpenUrl(openUrl)
 }
+
+func (a *App) ClientId() string {
+	return utils.ClientId()
+}
+
+func (a *App) onDomReady(ctx context.Context) {
+	log.Println("[onDomReady]")
+}

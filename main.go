@@ -28,6 +28,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
+		OnDomReady:    app.onDomReady,
 		Frameless:     true,
 		DisableResize: true,
 	})

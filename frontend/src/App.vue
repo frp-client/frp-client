@@ -12,33 +12,52 @@
             <router-link class="alink" @click="openUrl('https://github.com/frp-client/frp-client')" to="">
               frp-client
             </router-link>
-            <span class="plr2">v1.0.0</span>
+            <span class="mlr2">v1.0.0</span>
+
+            <span v-if="clientId" class="mlr6">
+              ID: {{ clientId.substring(0, 12) }}
+            </span>
+
           </div>
           <div>{{ clock }}</div>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
-import {defineComponent, onBeforeMount, ref} from "vue";
+import {defineComponent, onBeforeMount, onMounted, ref} from "vue";
 import Head from './components/Head.vue'
 import {useRoute, useRouter} from "vue-router";
 import Sidebar from "./components/Sidebar.vue";
 import {openUrl} from "./common/helper.js";
+import {ClientId} from "../wailsjs/go/main/App.js";
 
 let route = null
 let router = null
 let clock = ref(null)
+let clientId = ref(null)
 
 const onBeforeMountHandler = () => {
   timeClock()
 }
 
+const onMountedHandler = () => {
+  ClientId().then(resp => {
+    console.log('[onMountedHandler]', resp)
+    clientId.value = resp
+  }).catch(err => {
+    console.log('[onMountedHandler]', err)
+  })
+  // alert('[ClientId]'+a)
+}
+
 const timeClock = () => {
+  clock.value = (new Date()).toLocaleString()
   setInterval(() => {
-    clock.value = new Date()
+    clock.value = (new Date()).toLocaleString()
   }, 2000)
 }
 
@@ -49,8 +68,10 @@ export default defineComponent({
     route = useRoute()
     router = useRouter()
     onBeforeMount(onBeforeMountHandler)
+    onMounted(onMountedHandler)
     return {
       clock,
+      clientId,
     }
   },
 })
