@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"frp-client/utils"
 	"github.com/energye/systray"
+	"github.com/frp-client/frp-client/utils"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"log"
 	"path"

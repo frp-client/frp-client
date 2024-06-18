@@ -9,6 +9,7 @@
               :key="n"
               cols="12"
               md="4"
+              @click="onClickFrpcStart"
           >
             <v-item v-slot="{ isSelected, selectedClass, toggle }">
               <v-card
@@ -32,8 +33,27 @@
   </div>
 </template>
 
-<script >
-console.log('[SETTING]')
+<script>
+import {defineComponent} from "vue"
+import {FrpcStart} from '../../wailsjs/go/main/App.js'
+
+const onClickFrpcStart = () => {
+  console.log('[onClickFrpcStart]')
+  FrpcStart().then(resp => {
+    console.log('[FrpcStartOk]', resp)
+  }).catch(err => {
+    console.log('[FrpcStartError]', err)
+  })
+}
+
+export default defineComponent({
+  setup() {
+    return {
+      onClickFrpcStart,
+    }
+  }
+})
+
 </script>
 
 <style scoped>

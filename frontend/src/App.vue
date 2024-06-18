@@ -9,7 +9,9 @@
         </div>
         <div class="footer flex-items-center flex-items-between plr20">
           <div>
-            <text class="">版本</text>&nbsp;
+            <router-link class="alink" @click="openUrl('https://github.com/frp-client/frp-client')" to="">
+              frp-client
+            </router-link>
             <span class="plr2">v1.0.0</span>
           </div>
           <div>{{ clock }}</div>
@@ -24,6 +26,7 @@ import {defineComponent, onBeforeMount, ref} from "vue";
 import Head from './components/Head.vue'
 import {useRoute, useRouter} from "vue-router";
 import Sidebar from "./components/Sidebar.vue";
+import {openUrl} from "./common/helper.js";
 
 let route = null
 let router = null
@@ -40,6 +43,7 @@ const timeClock = () => {
 }
 
 export default defineComponent({
+  methods: {openUrl},
   components: {Sidebar, Head},
   setup() {
     route = useRoute()
