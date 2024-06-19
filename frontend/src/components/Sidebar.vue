@@ -2,7 +2,7 @@
   <div class="sidebar flex-align-items-center text-align-center">
 
     <div class="flex-column">
-      <v-avatar :size="80" class="avatar">
+      <v-avatar :size="80" class="avatar" @click="onClickLogin">
         <v-img src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"></v-img>
       </v-avatar>
 
@@ -25,6 +25,7 @@
 import {defineComponent, onBeforeMount, ref} from "vue";
 import {Icon} from '@vicons/utils'
 import {CloseFilled, HorizontalRuleFilled, MenuFilled, MinusFilled, SettingsFilled} from "@vicons/material";
+import router from "../router/index.js";
 
 const onBeforeMountHandler = () => {
 
@@ -51,6 +52,11 @@ const menus = ref([
     name: '关于',
     to: '/about',
     activeClass: '',
+  }, {
+    id: 6,
+    name: '调试',
+    to: '/debug',
+    activeClass: '',
   }
 ])
 
@@ -66,6 +72,10 @@ const onClickMenu = (data) => {
   })
 }
 
+const onClickLogin = () => {
+  router.push('/login')
+}
+
 export default defineComponent({
   components: {Icon, CloseFilled, HorizontalRuleFilled, MinusFilled, SettingsFilled, MenuFilled},
   setup() {
@@ -73,6 +83,7 @@ export default defineComponent({
     return {
       menus,
       onClickMenu,
+      onClickLogin,
     }
   }
 })

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/energye/systray"
+	"github.com/frp-client/frp-client/model"
 	"github.com/frp-client/frp-client/utils"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"log"
@@ -28,7 +29,7 @@ func (a *App) startup(ctx context.Context) {
 }
 func (a *App) systemTray() {
 	var p = path.Join(utils.AppPath(), "frontend/src/assets/images/instant_mix_24dp.ico")
-	systray.SetIcon(utils.ReadFile(p))
+	systray.SetIcon(utils.ReadFileAsByte(p))
 
 	systray.AddMenuItem("显示", "Show The Window").Click(func() {
 		runtime.Show(a.ctx)
@@ -67,5 +68,9 @@ func (a *App) ClientId() string {
 }
 
 func (a *App) onDomReady(ctx context.Context) {
-	log.Println("[onDomReady]")
+	runtime.EventsEmit(ctx, "onStartUpEvent", model.Map{
+		"baseURL":  baseURL,
+		"clientId": a.ClientId(),
+		"_from":    "domReady",
+	})
 }

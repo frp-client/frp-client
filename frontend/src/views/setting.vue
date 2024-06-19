@@ -135,7 +135,6 @@
 <script>
 import {defineComponent, getCurrentInstance, onMounted, ref} from "vue";
 
-console.log('[SETTING]')
 let inst = null
 
 const showTipsModal = ref(false)
@@ -166,7 +165,6 @@ const formData = ref({
     value: '',
     rule: [
       value => {
-        console.log('[value]', value)
         if (!value || value.length < 2) {
           return '请输入代理名称(不少于2位)';
         }

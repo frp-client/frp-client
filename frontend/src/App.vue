@@ -15,7 +15,7 @@
             <span class="mlr2">v1.0.0</span>
 
             <span v-if="clientId" class="mlr6">
-              ID: {{ clientId.substring(0, 12) }}
+              客户端ID: {{ clientId.substring(0, 12) }}
             </span>
 
           </div>
@@ -34,6 +34,8 @@ import {useRoute, useRouter} from "vue-router";
 import Sidebar from "./components/Sidebar.vue";
 import {openUrl} from "./common/helper.js";
 import {ClientId} from "../wailsjs/go/main/App.js";
+import {EventsOn} from "../wailsjs/runtime/runtime.js";
+import request from "./common/request.js";
 
 let route = null
 let router = null
@@ -41,6 +43,11 @@ let clock = ref(null)
 let clientId = ref(null)
 
 const onBeforeMountHandler = () => {
+  EventsOn('onStartUpEvent', (data) => {
+    console.log('[onStartUpEvent]', data)
+    request.setBaseURL(data.baseURL)
+    request.setClientId(data.clientId)
+  })
   timeClock()
 }
 

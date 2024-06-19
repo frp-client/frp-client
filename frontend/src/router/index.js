@@ -21,6 +21,16 @@ const routes = [
         name: 'proxy',
         component: () => import('../views/proxy.vue')
     },
+    {
+        path: '/login',
+        name: 'login',
+        component: () => import('../views/login.vue')
+    },
+    {
+        path: '/debug',
+        name: 'debug',
+        component: () => import('../views/debug.vue')
+    },
 ]
 
 export default createRouter({
