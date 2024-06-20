@@ -1,6 +1,6 @@
 import axios from "axios";
 
-let _client_id = ''
+let _config = {baseURL: '', jwtToken: '', clientId: '',}
 
 const request = axios.create({
     baseURL: '',
@@ -9,7 +9,10 @@ const request = axios.create({
 
 request.interceptors.request.use(value => {
     if (!value.headers['X_CLIENT_ID']) {
-        value.headers['X_CLIENT_ID'] = _client_id
+        value.headers['X_CLIENT_ID'] = _config.clientId
+    }
+    if (!value.headers['Authorization'] && _config.jwtToken) {
+        value.headers['Authorization'] = `Bearer ${_config.jwtToken}`
     }
 
     // console.log('[request.data]', value)
@@ -25,17 +28,20 @@ request.interceptors.response.use(resp => {
     if (resp.data.code === 200) {
         return resp
     }
+    // 直接可以显示错误信息
+    resp.data.toString = () => {
+        return resp.data.msg
+    }
     return Promise.reject(resp.data)
 }, error => {
     // console.log('[response.error]', error)
     return Promise.reject(error)
 })
 
-request.setBaseURL = (_baseUrl) => {
-    request.defaults.baseURL = _baseUrl
-}
-request.setClientId = (clientId) => {
-    _client_id = clientId
+request.config = (config = _config) => {
+    // console.log('[request.config]', config)
+    _config = Object.assign(_config, config)
+    request.defaults.baseURL = _config.baseURL
 }
 
 export default request

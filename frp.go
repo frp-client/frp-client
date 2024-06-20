@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/frp-client/frp-client/model"
 	"github.com/frp-client/frp-client/utils"
 	"github.com/frp-client/frp/client"
@@ -16,8 +15,12 @@ import (
 )
 
 func (a *App) FrpcStart() (resp model.Response) {
-	//return startService(cfg, proxyCfgs, visitorCfgs, cfgFilePath)
-	buf, err := utils.HttpJsonGet("http://127.0.0.1:3000/api/frpc/config")
+	var configResp = struct {
+		Code uint             `json:"code"`
+		Msg  string           `json:"msg"`
+		Data model.FrpcConfig `json:"data"`
+	}{}
+	_, err := utils.HttpJsonGetUnmarshal("http://127.0.0.1:3000/api/frpc/config", nil, &configResp)
 	if err != nil {
 		resp = model.Response{
 			Ok:  false,
@@ -25,25 +28,11 @@ func (a *App) FrpcStart() (resp model.Response) {
 		}
 		return
 	}
-
-	type Resp struct {
-		Code uint             `json:"code"`
-		Msg  string           `json:"msg"`
-		Data model.FrpcConfig `json:"data"`
-	}
-	var apiResp Resp
-	if err = json.Unmarshal(buf, &apiResp); err != nil {
-		resp = model.Response{
-			Ok:  false,
-			Msg: err.Error(),
-		}
-		return
-	}
-	if apiResp.Data.ServerPort <= 0 {
+	if configResp.Data.ServerPort <= 0 {
 		resp = model.Response{
 			Ok:   false,
 			Msg:  "服务器端口配置错误",
-			Data: apiResp,
+			Data: configResp,
 		}
 		return
 	}
@@ -51,9 +40,9 @@ func (a *App) FrpcStart() (resp model.Response) {
 	var cfg = &v1.ClientCommonConfig{}
 	cfg.Complete()
 
-	cfg.ServerAddr = apiResp.Data.ServerAddr
-	cfg.ServerPort = int(apiResp.Data.ServerPort)
-	cfg.LoginFailExit = &apiResp.Data.LoginFailExit
+	cfg.ServerAddr = configResp.Data.ServerAddr
+	cfg.ServerPort = int(configResp.Data.ServerPort)
+	cfg.LoginFailExit = &configResp.Data.LoginFailExit
 
 	cfg.AccessToken = "ed30dfa6e2c4070c7503722c73931ad8"
 
@@ -176,4 +165,9 @@ func (a *App) frpcStartService(cfg *v1.ClientCommonConfig, proxyCfgs []v1.ProxyC
 		go a.frpcGracefulClose(svr)
 	}
 	return svr.Run(context.Background())
+}
+
+func (a *App) FrpcLogin() {
+	//util.EmptyOr("", "")
+	//a.frpcLogin(utils.ClientId(), utils.ClientId())
 }

@@ -25,7 +25,15 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	systray.Run(a.systemTray, func() {})
+	go systray.Run(a.systemTray, func() {})
+	go func() {
+		_, err := a.apiClientLogin()
+		if err != nil {
+			log.Println("[客户端登陆失败]", err.Error())
+			runtime.Quit(ctx)
+			return
+		}
+	}()
 }
 func (a *App) systemTray() {
 	var p = path.Join(utils.AppPath(), "frontend/src/assets/images/instant_mix_24dp.ico")
@@ -68,9 +76,18 @@ func (a *App) ClientId() string {
 }
 
 func (a *App) onDomReady(ctx context.Context) {
+
+	session, _ := a.checkUserSession()
+
 	runtime.EventsEmit(ctx, "onStartUpEvent", model.Map{
-		"baseURL":  baseURL,
-		"clientId": a.ClientId(),
-		"_from":    "domReady",
+		"baseURL":     baseURL,
+		"clientId":    a.ClientId(),
+		"_from":       "domReady",
+		"userId":      session.UserId,
+		"username":    session.Username,
+		"machineId":   session.MachineId,
+		"updatedAt":   session.UpdatedAt,
+		"jwtToken":    session.JwtToken,
+		"accessToken": session.AccessToken,
 	})
 }

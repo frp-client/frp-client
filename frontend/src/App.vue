@@ -33,32 +33,27 @@ import Head from './components/Head.vue'
 import {useRoute, useRouter} from "vue-router";
 import Sidebar from "./components/Sidebar.vue";
 import {openUrl} from "./common/helper.js";
-import {ClientId} from "../wailsjs/go/main/App.js";
 import {EventsOn} from "../wailsjs/runtime/runtime.js";
 import request from "./common/request.js";
+import {setSession} from "./common/vars.js"
 
 let route = null
 let router = null
-let clock = ref(null)
-let clientId = ref(null)
+const clock = ref(null)
+const clientId = ref(null)
+
+const onMountedHandler = () => {
+}
 
 const onBeforeMountHandler = () => {
   EventsOn('onStartUpEvent', (data) => {
     console.log('[onStartUpEvent]', data)
-    request.setBaseURL(data.baseURL)
-    request.setClientId(data.clientId)
+    request.config({baseURL: data.baseURL, jwtToken: data.jwtToken, clientId: data.clientId,})
+    setSession(data)
+
+    clientId.value = data.clientId
   })
   timeClock()
-}
-
-const onMountedHandler = () => {
-  ClientId().then(resp => {
-    console.log('[onMountedHandler]', resp)
-    clientId.value = resp
-  }).catch(err => {
-    console.log('[onMountedHandler]', err)
-  })
-  // alert('[ClientId]'+a)
 }
 
 const timeClock = () => {

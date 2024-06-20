@@ -77,10 +77,12 @@ body {
     padding-left: 2px;
     padding-right: 2px;
 }
+
 .mlr2 {
     margin-left: 2px;
     margin-right: 2px;
 }
+
 .mlr6 {
     margin-left: 6px;
     margin-right: 6px;
@@ -103,6 +105,10 @@ body {
     border-bottom: 2px dashed;
 }
 
-.p-gray{
+.p-gray {
     color: gray;
+}
+
+.pointer {
+    cursor: pointer;
 }

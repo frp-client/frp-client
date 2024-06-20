@@ -46,14 +46,15 @@
 </template>
 
 <script>
-import {defineComponent, getCurrentInstance, onMounted, ref} from "vue";
+import {defineComponent, getCurrentInstance, onBeforeMount, onMounted, ref} from "vue";
 import api from "../common/api.js";
 import Snackbar from "../components/MySnackbar.vue";
 import MySnackbar from "../components/MySnackbar.vue";
 import MyLoading from "../components/MyLoading.vue";
+import {LoginSuccess} from "../../wailsjs/go/main/App.js";
+import {getSession} from "../common/vars.js";
 
 let inst = null
-
 
 const formRef = ref(null)
 const formData = ref({
@@ -61,8 +62,8 @@ const formData = ref({
     value: '',
     rule: [
       value => {
-        if (!value || value.length < 6 || value.length > 20) {
-          return '请输入用户名(6-20位)';
+        if (!value || value.length < 4 || value.length > 20) {
+          return '请输入用户名(4-20位)';
         }
         return true;
       },
@@ -88,16 +89,26 @@ const onClickSubmit = async () => {
     return
   }
 
-  api.login({username: formData.value.username.value, password: formData.value.password.value}).then(resp => {
-    console.log('[api.login]', resp)
-
-    console.log('[]', inst.$refs.mySnackbar.show('OK'))
+  inst.$refs.myLoading.show()
+  api.login({
+    username: formData.value.username.value,
+    password: formData.value.password.value,
+  }).then(resp => {
+    LoginSuccess(resp.data.data).finally(() => {
+      inst.$refs.mySnackbar.show('登录成功')
+    })
   }).catch(err => {
-    console.log('[api.login]', err)
-    console.log('[]', inst.$refs.mySnackbar.show(err))
+    inst.$refs.mySnackbar.show(err)
+  }).finally(() => {
+    inst.$refs.myLoading.hide()
   })
-  // axios.hasOwnProperty()
 
+}
+
+const onBeforeMountHandler = () => {
+  const session = getSession()
+  formData.value.username.value = session.username
+  formData.value.password.value = ''
 }
 
 export default defineComponent({
@@ -106,13 +117,14 @@ export default defineComponent({
     onMounted(() => {
       inst = getCurrentInstance().ctx
 
-      inst.$refs.myLoading.show()
-      setTimeout(() => {
-        inst.$refs.myLoading.hide()
-      }, 1000)
+      // inst.$refs.myLoading.show()
+      // setTimeout(() => {
+      //   inst.$refs.myLoading.hide()
+      // }, 1000)
       // inst.$refs.mySnackbar.show('OK')
 
     })
+    onBeforeMount(onBeforeMountHandler)
     return {
       formRef,
       formData,
