@@ -155,26 +155,27 @@ import {defineComponent, getCurrentInstance, onMounted, ref} from "vue";
 import api from "../common/api.js";
 import MyLoading from "../components/MyLoading.vue";
 import MySnackbar from "../components/MySnackbar.vue";
-import router from "../router/index.js";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {handleProxyDomain} from '../common/proxy.js'
 import MyConfirm from "../components/MyConfirm.vue";
 
+let route = null
+let router = null
 let inst = null
+let id = null
 
 const showTipsModal = ref(false)
-const route = ref({})
 
 const formRef = ref(null)
 const formData = ref({
   expandModel: [0],
   proxyType: {
-    select: {label: 'http', value: 'http', _type: 1},
+    select: null,
     items: [
-      {label: 'http', value: 'http', _type: 1},
-      {label: 'https', value: 'https', _type: 2},
-      {label: 'tcp', value: 'tcp', _type: 3},
-      {label: 'udp', value: 'udp', _type: 4},
+      {label: 'http', value: 1},
+      {label: 'https', value: 2},
+      {label: 'tcp', value: 3},
+      {label: 'udp', value: 4},
     ],
     rule: [
       value => {
@@ -221,10 +222,10 @@ const formData = ref({
     rule: [],
   },
   proxyStatus: {
-    select: {label: '运行', value: 1},
+    select: 1,
     items: [
-      {label: '运行', value: 1},
-      {label: '不运行', value: 0},
+      {label: '启用', value: 1},
+      {label: '禁用', value: 2},
     ],
     rule: [],
 
@@ -239,39 +240,66 @@ const formData = ref({
   }
 })
 
+const resetFormData = () => {
+  formData.value.proxyType.select = null
+  formData.value.proxyName.value = null
+  formData.value.localAddr.value = '127.0.0.1:8080'
+  formData.value.remotePort.value = null
+  formData.value.domain.value = null
+  formData.value.proxyStatus.select = 1
+  formData.value.sslCrt.value = null
+  formData.value.sslKey.value = null
+}
+
 const formatProxyForm = () => {
   return {
-    proxy_type: formData.value.proxyType.select._type ?? 0,
+    proxy_type: +formData.value.proxyType.select,
     proxy_name: formData.value.proxyName.value,
     proxy_remote_port: +formData.value.remotePort.value,
     proxy_local_addr: formData.value.localAddr.value,
     proxy_extra: {
       subdomain: '',
     },
-    status: +formData.value.proxyStatus.select.value,
+    status: +formData.value.proxyStatus.select,
   }
 }
 
 const onClickSubmit = async () => {
-  // console.log('[onClickSubmit]', formData.value)
-  // console.log('[formRef1]', inst.$refs.formRef)
   const {valid} = await inst.$refs.formRef.validate()
-  console.log('[valid]', valid)
   if (!valid) {
     return
   }
+  if (id) {
+    updateProxy(id, formatProxyForm())
+  } else {
+    createProxy(formatProxyForm())
+  }
+}
 
+const createProxy = (data) => {
   inst.$refs.myLoading.show()
-  api.createProxy(formatProxyForm()).then(resp => {
+  api.createProxy(data).then(resp => {
     console.log('[api.createProxy]', resp)
-    inst.$refs.mySnackbar.show('创建成功，即将跳转...')
+    // inst.$refs.mySnackbar.show('创建完成，即将跳转...')
     router.push('/proxy')
   }).catch(err => {
     inst.$refs.mySnackbar.show(err)
   }).finally(() => {
     inst.$refs.myLoading.hide()
   })
+}
 
+const updateProxy = (id, data) => {
+  inst.$refs.myLoading.show()
+  api.updateProxy(id, data).then(resp => {
+    console.log('[api.createProxy]', resp)
+    // inst.$refs.mySnackbar.show('修改完成，即将跳转...')
+    router.push('/proxy')
+  }).catch(err => {
+    inst.$refs.mySnackbar.show(err)
+  }).finally(() => {
+    inst.$refs.myLoading.hide()
+  })
 }
 
 const loadProxy = (id) => {
@@ -279,8 +307,8 @@ const loadProxy = (id) => {
   api.getProxy(id).then(resp => {
     const tmpForm = resp.data.data
     formData.value.proxyType.items.filter(item => {
-      if (item._type === tmpForm.proxy_type) {
-        formData.value.proxyType.select = item
+      if (item.value === tmpForm.proxy_type) {
+        formData.value.proxyType.select = tmpForm.proxy_type
       }
     })
     formData.value.proxyName.value = tmpForm.proxy_name
@@ -299,11 +327,10 @@ const loadProxy = (id) => {
 }
 
 const onMountedHandler = () => {
-  console.log('[onMountedHandler.route1]', route.value)
-  console.log('[onMountedHandler.route2]', route.value.query)
   inst = getCurrentInstance().ctx
 
-  const id = route.value.query['id']
+  resetFormData()
+  id = route.query['id']
   if (id) {
     loadProxy(id)
   }
@@ -312,7 +339,8 @@ const onMountedHandler = () => {
 export default defineComponent({
   components: {MyConfirm, MySnackbar, MyLoading},
   setup() {
-    route.value = useRoute()
+    route = useRoute()
+    router = useRouter()
     onMounted(onMountedHandler)
     return {
       formRef,

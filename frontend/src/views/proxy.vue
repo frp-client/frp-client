@@ -3,10 +3,23 @@
 
     <div class="ml-2 mr-2">
       <div class="flex-items-between ml-2 mr-2">
-        <v-chip color="primary" label>
-          <v-icon icon="view_list" start></v-icon>
-          规则列表
-        </v-chip>
+        <div>
+          <v-chip class="pointer" color="primary" label>
+            <v-icon icon="view_list" start></v-icon>
+            规则列表
+          </v-chip>
+
+          <!--
+          <v-chip class="pointer ml-3" color="primary" label>
+            启用
+          </v-chip>
+
+          <v-chip class="pointer ml-3" color="primary" label>
+            禁用
+          </v-chip>
+          -->
+
+        </div>
         <router-link to="/proxy-edit">
           <v-btn color="primary" variant="tonal">创建规则</v-btn>
         </router-link>
@@ -16,7 +29,13 @@
     <v-item-group selected-class="bg-primary" v-if="proxies.list">
       <v-container>
         <v-row>
-          <v-col v-for="(proxy,index) in proxies.list" :key="index" cols="12" md="6" @click="onClickFrpcStart">
+          <v-col
+              v-for="(proxy,index) in proxies.list"
+              :key="index"
+              cols="12"
+              md="6"
+              @click="onClickFrpcStart"
+          >
             <v-item v-slot="{ isSelected, selectedClass, toggle }">
               <v-card
                   :class="['d-flex card-item', 'selectedClass']"
@@ -49,7 +68,9 @@
                     </div>
                     <div class="ma-2 item-line">
                       <span class="label">状态：</span>
-                      <span>{{ handleProxyStatusName(proxy.status) }}</span>
+                      <span>{{ handleProxyStatusName(proxy.status) }}</span>&nbsp;
+                      <v-icon v-if="proxy.status===1" icon="sync" color="green" start></v-icon>
+                      <v-icon v-else icon="sync_disabled" color="orange" start></v-icon>
                     </div>
                     <div class="ma-2 item-line" style="font-size: 12px; color: grey">
                       <span class="label">创建时间：</span>

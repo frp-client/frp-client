@@ -16,6 +16,10 @@ const createProxy = (data) => {
     return request.post('/api/frpc/proxy', data)
 }
 
+const updateProxy = (id, data) => {
+    return request.put(`/api/frpc/proxy/${id}`, data)
+}
+
 const deleteProxy = (id) => {
     return request.delete(`/api/frpc/proxy/${id}`)
 }
@@ -25,5 +29,6 @@ export default {
     getProxies,
     getProxy,
     createProxy,
+    updateProxy,
     deleteProxy,
 }

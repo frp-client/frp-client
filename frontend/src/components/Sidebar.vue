@@ -128,7 +128,13 @@ export default defineComponent({
       padding: 15px 0 15px 4px;
     }
 
-    a:hover, a.active {
+    a:hover {
+      background-color: #f7fbff !important;
+      border-left: 4px solid rgba(0, 188, 213, 0.68);
+      padding: 15px 0 15px 0;
+    }
+
+    a.active {
       background-color: ghostwhite;
       border-left: 4px solid rgba(0, 188, 213, 0.68);
       padding: 15px 0 15px 0;
