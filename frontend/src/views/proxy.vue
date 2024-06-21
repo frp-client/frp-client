@@ -42,7 +42,7 @@
                     </div>
                     <div class="ma-2 item-line">
                       <span class="label">公网：</span>
-                      <span class="dashed overflow-hidden">{{ proxy.proxy_local_addr }}hgjhjkhxfsdgfdhdjghklxdf</span>
+                      <span class="dashed overflow-hidden">{{ handleProxyDomain(proxy) }}</span>
                       <!--
                       <v-icon icon="md:content_copy"></v-icon>
                       -->
@@ -56,11 +56,13 @@
                       <span>{{ timeFormat(proxy.created_at) }}</span>
                     </div>
                     <div class="ma-2 flex-items-end">
-                      <v-chip color="orange" label>
-                        <v-icon icon="view_list" start></v-icon>
-                        修改
-                      </v-chip>
-                      <v-chip color="red" label class="ml-3">
+                      <router-link :to="{path:'/proxy-edit', query:{id: proxy.id}}">
+                        <v-chip color="orange" label>
+                          <v-icon icon="view_list" start></v-icon>
+                          修改
+                        </v-chip>
+                      </router-link>
+                      <v-chip color="red" label class="ml-3" @click="onClickDeleteProxy(proxy)">
                         <v-icon icon="view_list" start></v-icon>
                         删除
                       </v-chip>
@@ -80,6 +82,7 @@
 
     <MySnackbar ref="mySnackbar"></MySnackbar>
     <MyLoading ref="myLoading"></MyLoading>
+    <MyConfirm ref="myConfirm"></MyConfirm>
 
   </div>
 </template>
@@ -93,9 +96,13 @@ import MySnackbar from "../components/MySnackbar.vue";
 import {handleProxyStatusName, handleProxyTypeName} from "../common/types.js";
 import MyEmpty from "../components/MyEmpty.vue";
 import {timeFormat} from "../common/helper.js";
+import {useRoute} from "vue-router";
+import {handleProxyDomain} from '../common/proxy.js'
+import MyConfirm from "../components/MyConfirm.vue";
 
 let inst = null
 const proxies = ref({})
+const route = ref({})
 
 const onClickFrpcStart = () => {
   console.log('[onClickFrpcStart]')
@@ -121,14 +128,40 @@ const loadProxies = () => {
   })
 }
 
+const deleteProxies = (id, callback = null) => {
+  inst.$refs.myLoading.show()
+  api.deleteProxy(id).then(resp => {
+  }).catch(err => {
+    inst.$refs.mySnackbar.show(err)
+  }).finally(() => {
+    inst.$refs.myLoading.hide()
+    if (callback) {
+      callback()
+    }
+  })
+}
+
 const onMountedHandler = () => {
+  console.log('[onMountedHandler]', route.value)
   inst = getCurrentInstance().ctx
   loadProxies()
 }
 
+const onClickDeleteProxy = (proxy) => {
+  inst.$refs.myConfirm.show(`确定删除规则 <b>[${proxy.proxy_name}]</b> 吗？`, {
+    confirmCallback: () => {
+      deleteProxies(proxy.id, () => {
+        loadProxies()
+      })
+    }, cancelCallback: () => {
+    }
+  })
+}
+
 export default defineComponent({
-  components: {MyEmpty, MySnackbar, MyLoading},
+  components: {MyConfirm, MyEmpty, MySnackbar, MyLoading},
   setup() {
+    route.value = useRoute()
     onMounted(onMountedHandler)
     return {
       onClickFrpcStart,
@@ -136,6 +169,8 @@ export default defineComponent({
       handleProxyTypeName,
       handleProxyStatusName,
       timeFormat,
+      handleProxyDomain,
+      onClickDeleteProxy,
     }
   }
 })
