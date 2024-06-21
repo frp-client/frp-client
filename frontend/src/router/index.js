@@ -22,6 +22,11 @@ const routes = [
         component: () => import('../views/proxy.vue')
     },
     {
+        path: '/proxy-edit',
+        name: 'proxy-edit',
+        component: () => import('../views/proxy-edit.vue')
+    },
+    {
         path: '/login',
         name: 'login',
         component: () => import('../views/login.vue')

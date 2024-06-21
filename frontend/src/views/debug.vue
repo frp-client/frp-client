@@ -4,6 +4,7 @@
 
     <router-link to="/login">登录</router-link>
     <router-link to="/login">登录</router-link>
+    <router-link to="/proxy">代理列表</router-link>
 
   </div>
 </template>

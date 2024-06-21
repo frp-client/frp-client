@@ -5,7 +5,7 @@
       <div class="container">
         <div class="main">
           <Sidebar style="width: 160px;"/>
-          <router-view class="plr20 ptb20" style="flex: 1; overflow-y: auto;"/>
+          <router-view class="mlr20 mt20" style="flex: 1; overflow-y: auto;"/>
         </div>
         <div class="footer flex-items-center flex-items-between plr20">
           <div>

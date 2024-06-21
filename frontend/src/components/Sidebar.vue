@@ -5,7 +5,7 @@
       <v-avatar :size="80" class="avatar pointer" @click="onClickLogin">
         <v-img src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"></v-img>
       </v-avatar>
-      <div class="username mt-3 pointer overflow-hidden" @click="onClickLogin">
+      <div class="username mt-3 pointer overflow-hidden" @click="onClickLogin" v-if="username">
         {{ username.substring(0, 12) }}
       </div>
     </div>
@@ -24,18 +24,21 @@
 </template>
 
 <script>
-import {defineComponent, onBeforeMount, ref} from "vue";
+import {defineComponent, onBeforeMount, onMounted, ref} from "vue";
 import {Icon} from '@vicons/utils'
 import {CloseFilled, HorizontalRuleFilled, MenuFilled, MinusFilled, SettingsFilled} from "@vicons/material";
 import router from "../router/index.js";
-import {getSession} from "../common/vars.js";
+import {EventsOn} from "../../wailsjs/runtime/runtime.js";
 
 const username = ref(null)
 
 const onBeforeMountHandler = () => {
-  const session = getSession()
+  EventsOn('onStartUpEvent', (data) => {
+    username.value = data.username
+  })
+}
 
-  username.value = session.username
+const onMountedHandler = () => {
 }
 
 const menus = ref([
@@ -46,7 +49,7 @@ const menus = ref([
     activeClass: 'active',
   }, {
     id: 2,
-    name: '转发',
+    name: '规则',
     to: '/proxy',
     activeClass: '',
   }, {
@@ -87,6 +90,7 @@ export default defineComponent({
   components: {Icon, CloseFilled, HorizontalRuleFilled, MinusFilled, SettingsFilled, MenuFilled},
   setup() {
     onBeforeMount(onBeforeMountHandler)
+    onMounted(onMountedHandler)
     return {
       menus,
       onClickMenu,

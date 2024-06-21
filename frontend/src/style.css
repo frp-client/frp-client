@@ -37,9 +37,18 @@ body {
     padding-bottom: 10px;
 }
 
-.ptb20 {
-    padding-top: 20px;
-    padding-bottom: 20px;
+.mlr20 {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.mtb20 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.mt20 {
+    margin-top: 20px;
 }
 
 /** 设置子元素左右对其 **/
@@ -47,6 +56,12 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+}
+
+.flex-items-end {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
 }
 
 /*元素上下居中*/
