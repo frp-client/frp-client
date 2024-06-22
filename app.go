@@ -6,6 +6,7 @@ import (
 	"github.com/energye/systray"
 	"github.com/frp-client/frp-client/model"
 	"github.com/frp-client/frp-client/utils"
+	v1 "github.com/frp-client/frp/pkg/config/v1"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"log"
 	"path"
@@ -13,7 +14,10 @@ import (
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx             context.Context
+	frpcUsersession *model.UserSession
+	frpcConfig      *model.FrpcConfig
+	frpcProxyCfgs   *[]v1.ProxyConfigurer
 }
 
 // NewApp creates a new App application struct
@@ -27,10 +31,22 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	go systray.Run(a.systemTray, func() {})
 	go func() {
-		_, err := a.apiClientLogin()
+		session, err := a.apiClientLogin()
 		if err != nil {
 			log.Println("[客户端登陆失败]", err.Error())
-			runtime.Quit(ctx)
+			//runtime.Quit(ctx)
+			a.WindowMessage(fmt.Sprintf("客户端授权失败：%s", err.Error()), "提示")
+			return
+		}
+		a.frpcUsersession = &session
+
+		// 注册事件，并启动frpc
+		//runtime.EventsOn(ctx, "onFrpcNewConfig", a.OnFrpcNewConfig)
+		runtime.EventsOn(ctx, "onFrpcUpdateConfig", a.OnFrpcUpdateConfig)
+
+		err = a.OnFrpcNewConfig()
+		if err != nil {
+			a.WindowMessage(fmt.Sprintf("客户端启动失败：%s", err.Error()), "提示")
 			return
 		}
 	}()
@@ -90,4 +106,22 @@ func (a *App) onDomReady(ctx context.Context) {
 		"jwtToken":    session.JwtToken,
 		"accessToken": session.AccessToken,
 	})
+
+	// 获取代理数据，并配置
+}
+
+func (a *App) WindowMessage(msg, title string, dialogType ...runtime.DialogType) {
+	if len(dialogType) > 0 {
+		_, _ = runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+			Type:    dialogType[0],
+			Title:   title,
+			Message: msg,
+		})
+	} else {
+		_, _ = runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+			Type:    runtime.InfoDialog,
+			Title:   title,
+			Message: msg,
+		})
+	}
 }

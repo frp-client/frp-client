@@ -67,7 +67,8 @@ func (a *App) apiClientLogin() (model.UserSession, error) {
 				"password":  utils.Sha256(fmt.Sprintf("%s,%s", clientId, clientId)),
 				"sign":      utils.Sha256(fmt.Sprintf("%s,%d", clientId, ts)),
 				"timestamp": ts,
-			}), map[string]string{"X_CLIENT_ID": clientId},
+			}),
+			a.apiRequestHeaders(),
 			&registerResp,
 		)
 		if err != nil {
@@ -82,7 +83,7 @@ func (a *App) apiClientLogin() (model.UserSession, error) {
 				"username": clientId,
 				"password": utils.Sha256(fmt.Sprintf("%s,%s", clientId, clientId)),
 			}),
-			map[string]string{"X_CLIENT_ID": clientId},
+			a.apiRequestHeaders(),
 			&loginResp,
 		)
 		if err != nil {
@@ -105,7 +106,7 @@ func (a *App) apiClientLogin() (model.UserSession, error) {
 	// 登录成功检测
 	_, err = utils.HttpJsonGetUnmarshal(
 		utils.FormatUrl(baseURL, "/api/user/check"),
-		map[string]string{"X_CLIENT_ID": clientId, "Authorization": fmt.Sprintf("Bearer %s", session.JwtToken)},
+		a.apiRequestHeaders(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", session.JwtToken)}),
 		&checkResp,
 	)
 	if err != nil {
