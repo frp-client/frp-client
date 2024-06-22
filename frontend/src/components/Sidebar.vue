@@ -102,7 +102,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 
 .sidebar {
   display: flex;

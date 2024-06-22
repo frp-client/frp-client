@@ -70,7 +70,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style scoped  lang="scss">
 .head {
   height: 42px;
   line-height: 42px;

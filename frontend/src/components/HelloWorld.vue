@@ -25,7 +25,7 @@ function greet() {
   </main>
 </template>
 
-<style scoped>
+<style scoped  lang="scss">
 .result {
   height: 20px;
   line-height: 20px;

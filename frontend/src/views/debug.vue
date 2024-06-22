@@ -12,7 +12,7 @@
 <script setup>
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 
 
 </style>

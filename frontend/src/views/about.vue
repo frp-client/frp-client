@@ -29,7 +29,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .about {
   line-height: 250%;
 }

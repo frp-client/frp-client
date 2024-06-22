@@ -50,7 +50,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 
 .v-snackbar:not(.v-snackbar--center):not(.v-snackbar--top) {
   align-items: center;

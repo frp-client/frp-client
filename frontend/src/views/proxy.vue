@@ -198,7 +198,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .card-item {
   padding: 8px 10px;
 

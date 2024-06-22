@@ -80,7 +80,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 #logo {
   display: block;
   width: 50%;
