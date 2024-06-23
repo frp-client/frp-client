@@ -99,9 +99,9 @@
       <MyEmpty/>
     </div>
 
-    <MySnackbar ref="mySnackbar"></MySnackbar>
-    <MyLoading ref="myLoading"></MyLoading>
-    <MyConfirm ref="myConfirm"></MyConfirm>
+    <MySnackbar ref="refMySnackbar"></MySnackbar>
+    <MyLoading ref="refMyLoading"></MyLoading>
+    <MyConfirm ref="refMyConfirm"></MyConfirm>
 
   </div>
 </template>
@@ -124,6 +124,9 @@ let route = null
 let router = null
 
 const proxies = ref({})
+const refMyLoading = ref(MyLoading)
+const refMySnackbar = ref(MySnackbar)
+const refMyConfirm = ref(MyConfirm)
 
 const onClickFrpcStart = () => {
   console.log('[onClickFrpcStart]')
@@ -136,26 +139,25 @@ const onClickFrpcStart = () => {
 }
 
 const loadProxies = () => {
-  inst.$refs.myLoading.show()
+  refMyLoading.value.show()
   api.getProxies({limit: 20, page: 1}).then(resp => {
     console.log('[getProxies]', resp)
     proxies.value = resp.data.data
 
-    // inst.$refs.mySnackbar.show('登录成功' + resp)
   }).catch(err => {
-    inst.$refs.mySnackbar.show(err)
+    refMySnackbar.value.show(err)
   }).finally(() => {
-    inst.$refs.myLoading.hide()
+    refMyLoading.value.hide()
   })
 }
 
 const deleteProxies = (id, callback = null) => {
-  inst.$refs.myLoading.show()
+  refMyLoading.value.show()
   api.deleteProxy(id).then(resp => {
   }).catch(err => {
-    inst.$refs.mySnackbar.show(err)
+    refMySnackbar.value.show(err)
   }).finally(() => {
-    inst.$refs.myLoading.hide()
+    refMyLoading.value.hide()
     if (callback) {
       callback()
     }
@@ -169,7 +171,7 @@ const onMountedHandler = () => {
 }
 
 const onClickDeleteProxy = (proxy) => {
-  inst.$refs.myConfirm.show(`确定删除规则 <b>[${proxy.proxy_name}]</b> 吗？`, {
+  refMyConfirm.value.show(`确定删除规则 <b>[${proxy.proxy_name}]</b> 吗？`, {
     confirmCallback: () => {
       deleteProxies(proxy.id, () => {
         loadProxies()
@@ -198,6 +200,9 @@ export default defineComponent({
       handleProxyDomain,
       onClickDeleteProxy,
       onClickUpdateProxy,
+      refMyLoading,
+      refMySnackbar,
+      refMyConfirm,
     }
   }
 })
