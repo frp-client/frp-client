@@ -10,7 +10,7 @@ import (
 )
 
 func (a *App) getTempSessionFile() string {
-	return utils.AppTempFile(".session")
+	return utils.AppTempFile(fmt.Sprintf("%s.session", utils.Md5(baseURL)[:6]))
 }
 
 // 检查用户session数据

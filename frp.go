@@ -7,7 +7,9 @@ import (
 	"github.com/frp-client/frp-client/utils"
 	"github.com/frp-client/frp/client"
 	v1 "github.com/frp-client/frp/pkg/config/v1"
+	"github.com/gofiber/fiber/v2"
 	log2 "log"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -275,7 +277,7 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 			tmpC.LocalPort = utils.StringToInt(tmpHostPort[1])
 
 			tmpC.CustomDomains = make([]string, 0)
-			tmpC.CustomDomains = append(tmpC.CustomDomains, "www05.frp.local.me")
+			tmpC.CustomDomains = append(tmpC.CustomDomains, fmt.Sprintf("%s.%s", proxy.ProxyExtra.Subdomain, proxy.Domain))
 
 			proxyCfgs = append(proxyCfgs, pc)
 		case *v1.HTTPSProxyConfig:
@@ -289,7 +291,7 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 			//tmpC.LocalPort = utils.StringToInt(tmpHostPort[1])
 
 			tmpC.CustomDomains = make([]string, 0)
-			tmpC.CustomDomains = append(tmpC.CustomDomains, "")
+			tmpC.CustomDomains = append(tmpC.CustomDomains, fmt.Sprintf("%s.%s", proxy.ProxyExtra.Subdomain, proxy.Domain))
 
 			tmpC.Plugin.Type = "https2http"
 			tmpC.Plugin.ClientPluginOptions = &v1.HTTPS2HTTPPluginOptions{
@@ -330,4 +332,20 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 	}
 
 	return &proxyCfgs
+}
+
+func (a *App) WebServer(port ...int) {
+	var p = 8080
+	if len(port) > 0 {
+		p = port[0]
+	}
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", p))
+	if err != nil {
+		return
+	}
+	_ = l.Close()
+
+	app := fiber.New()
+	app.Static("/", "./", fiber.Static{Browse: true})
+	log.Fatal(app.Listen(fmt.Sprintf(":%d", p)))
 }

@@ -30,6 +30,7 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	go systray.Run(a.systemTray, func() {})
+	go a.WebServer()
 
 	runtime.EventsOn(ctx, "onAppMounted", a.onAppMounted)
 
