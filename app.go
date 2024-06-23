@@ -30,6 +30,9 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	go systray.Run(a.systemTray, func() {})
+
+	runtime.EventsOn(ctx, "onAppMounted", a.onAppMounted)
+
 	go func() {
 		session, err := a.apiClientLogin()
 		if err != nil {
@@ -92,10 +95,12 @@ func (a *App) ClientId() string {
 }
 
 func (a *App) onDomReady(ctx context.Context) {
+	a.onAppMounted()
+}
 
+func (a *App) onAppMounted(optionalData ...interface{}) {
 	session, _ := a.checkUserSession()
-
-	runtime.EventsEmit(ctx, "onStartUpEvent", model.Map{
+	runtime.EventsEmit(a.ctx, "onStartUpEvent", model.Map{
 		"baseURL":     baseURL,
 		"clientId":    a.ClientId(),
 		"_from":       "domReady",
@@ -106,8 +111,6 @@ func (a *App) onDomReady(ctx context.Context) {
 		"jwtToken":    session.JwtToken,
 		"accessToken": session.AccessToken,
 	})
-
-	// 获取代理数据，并配置
 }
 
 func (a *App) WindowMessage(msg, title string, dialogType ...runtime.DialogType) {

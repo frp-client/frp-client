@@ -20,9 +20,9 @@
           -->
 
         </div>
-        <router-link to="/proxy-edit">
-          <v-btn color="primary" variant="tonal">创建规则</v-btn>
-        </router-link>
+        <v-btn color="primary" variant="tonal" @click="$router.push('/proxy-edit')">
+          创建规则
+        </v-btn>
       </div>
     </div>
 
@@ -77,12 +77,10 @@
                       <span>{{ timeFormat(proxy.created_at) }}</span>
                     </div>
                     <div class="ma-2 flex-items-end">
-                      <router-link :to="{path:'/proxy-edit', query:{id: proxy.id}}">
-                        <v-chip color="orange" label>
-                          <v-icon icon="view_list" start></v-icon>
-                          修改
-                        </v-chip>
-                      </router-link>
+                      <v-chip color="orange" label class="ml-3" @click="onClickUpdateProxy(proxy)">
+                        <v-icon icon="view_list" start></v-icon>
+                        修改
+                      </v-chip>
                       <v-chip color="red" label class="ml-3" @click="onClickDeleteProxy(proxy)">
                         <v-icon icon="view_list" start></v-icon>
                         删除
@@ -117,13 +115,15 @@ import MySnackbar from "../components/MySnackbar.vue";
 import {handleProxyStatusName, handleProxyTypeName} from "../common/types.js";
 import MyEmpty from "../components/MyEmpty.vue";
 import {timeFormat} from "../common/helper.js";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {handleProxyDomain} from '../common/proxy.js'
 import MyConfirm from "../components/MyConfirm.vue";
 
 let inst = null
+let route = null
+let router = null
+
 const proxies = ref({})
-const route = ref({})
 
 const onClickFrpcStart = () => {
   console.log('[onClickFrpcStart]')
@@ -163,7 +163,7 @@ const deleteProxies = (id, callback = null) => {
 }
 
 const onMountedHandler = () => {
-  console.log('[onMountedHandler]', route.value)
+  console.log('[onMountedHandler]', route)
   inst = getCurrentInstance().ctx
   loadProxies()
 }
@@ -179,10 +179,15 @@ const onClickDeleteProxy = (proxy) => {
   })
 }
 
+const onClickUpdateProxy = (proxy) => {
+  router.push({path: '/proxy-edit', query: {id: proxy.id}})
+}
+
 export default defineComponent({
   components: {MyConfirm, MyEmpty, MySnackbar, MyLoading},
   setup() {
-    route.value = useRoute()
+    route = useRoute()
+    router = useRouter()
     onMounted(onMountedHandler)
     return {
       onClickFrpcStart,
@@ -192,6 +197,7 @@ export default defineComponent({
       timeFormat,
       handleProxyDomain,
       onClickDeleteProxy,
+      onClickUpdateProxy,
     }
   }
 })

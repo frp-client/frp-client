@@ -33,7 +33,7 @@ import Head from './components/Head.vue'
 import {useRoute, useRouter} from "vue-router";
 import Sidebar from "./components/Sidebar.vue";
 import {openUrl} from "./common/helper.js";
-import {EventsOn} from "../wailsjs/runtime/runtime.js";
+import {EventsEmit, EventsOn} from "../wailsjs/runtime/runtime.js";
 import request from "./common/request.js";
 import {setSession} from "./common/vars.js"
 
@@ -43,6 +43,8 @@ const clock = ref(null)
 const clientId = ref(null)
 
 const onMountedHandler = () => {
+  console.log('[App::onMountedHandler]')
+  EventsEmit('onAppMounted')
 }
 
 const onBeforeMountHandler = () => {
