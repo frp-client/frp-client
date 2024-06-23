@@ -5,11 +5,27 @@
     <router-link to="/login">登录</router-link>
     <router-link to="/login">登录</router-link>
     <router-link to="/proxy">代理列表</router-link>
+    <v-btn @click="onClickReloadApp" class="mt-2 mb-2">WindowReloadApp</v-btn>
+    <v-btn @click="onClickReloadApp" class="mt-2 mb-2">WindowReloadApp</v-btn>
 
   </div>
 </template>
 
-<script setup>
+<script>
+import {defineComponent} from "vue";
+import {WindowReloadApp} from "../../wailsjs/runtime/runtime.js";
+
+const onClickReloadApp = () => {
+  console.log('[onClickReloadApp]', WindowReloadApp())
+}
+
+export default defineComponent({
+  setup() {
+    return {
+      onClickReloadApp,
+    }
+  }
+})
 </script>
 
 <style scoped lang="scss">
