@@ -21,12 +21,12 @@
 
         </div>
         <div class="flex-items-between">
-          <v-chip class="pointer" color="primary" label @click="onClickReload" >
+          <v-chip class="pointer" color="primary" label @click="onClickReload">
             <v-icon icon="refresh" start></v-icon>
             重载服务
           </v-chip>
           <div class="ma-2"></div>
-          <v-chip class="pointer" color="primary" label @click="$router.push('/proxy-edit')" >
+          <v-chip class="pointer" color="primary" label @click="$router.push('/proxy-edit')">
             <v-icon icon="add" start></v-icon>
             创建规则
           </v-chip>
@@ -175,6 +175,9 @@ const deleteProxies = (id, callback = null) => {
 
 const onMountedHandler = () => {
   console.log('[onMountedHandler]', route)
+  if (+route.query['reload'] === 1) {
+    onClickReload()
+  }
   inst = getCurrentInstance().ctx
   loadProxies()
 }
@@ -184,6 +187,7 @@ const onClickDeleteProxy = (proxy) => {
     confirmCallback: () => {
       deleteProxies(proxy.id, () => {
         loadProxies()
+        FrpcStart()
       })
     }, cancelCallback: () => {
     }

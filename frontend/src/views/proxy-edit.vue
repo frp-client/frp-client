@@ -282,7 +282,7 @@ const createProxy = (data) => {
   refMyLoading.value.show()
   api.createProxy(data).then(resp => {
     console.log('[api.createProxy]', resp)
-    router.push('/proxy')
+    router.push('/proxy?reload=1')
   }).catch(err => {
     refMySnackbar.value.show(err)
   }).finally(() => {
@@ -294,7 +294,7 @@ const updateProxy = (id, data) => {
   refMyLoading.value.show()
   api.updateProxy(id, data).then(resp => {
     console.log('[api.createProxy]', resp)
-    router.push('/proxy')
+    router.push('/proxy?reload=1')
   }).catch(err => {
     refMySnackbar.value.show(err)
   }).finally(() => {
@@ -313,7 +313,7 @@ const loadProxy = (id) => {
     })
     formData.value.proxyName.value = tmpForm.proxy_name
     formData.value.localAddr.value = tmpForm.proxy_local_addr
-    formData.value.proxyStatus.value = tmpForm.status
+    formData.value.proxyStatus.select = tmpForm.status
     formData.value.remotePort.value = tmpForm.proxy_remote_port
     formData.value.sslCrt.value = tmpForm.proxy_extra.ssl_crt
     formData.value.sslKey.value = tmpForm.proxy_extra.ssl_key

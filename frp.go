@@ -155,6 +155,9 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 		if len(tmpHostPort) != 2 {
 			continue
 		}
+		if proxy.Status != 1 {
+			continue
+		}
 
 		switch tmpC := pc.(type) {
 		case *v1.HTTPProxyConfig:
