@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <v-form ref="formRef">
+    <v-form ref="refForm">
       <v-container>
         <v-expansion-panels v-model="formData.expandModel" class="mb-5">
           <v-expansion-panel>
@@ -143,8 +143,8 @@
       </v-card>
     </v-dialog>
 
-    <MySnackbar ref="mySnackbar"></MySnackbar>
-    <MyLoading ref="myLoading"></MyLoading>
+    <MySnackbar ref="refMySnackbar"></MySnackbar>
+    <MyLoading ref="refMyLoading"></MyLoading>
 
 
   </div>
@@ -165,8 +165,10 @@ let inst = null
 let id = null
 
 const showTipsModal = ref(false)
+const refForm = ref(false)
+const refMySnackbar = ref(MySnackbar)
+const refMyLoading = ref(MyLoading)
 
-const formRef = ref(null)
 const formData = ref({
   expandModel: [0],
   proxyType: {
@@ -265,7 +267,7 @@ const formatProxyForm = () => {
 }
 
 const onClickSubmit = async () => {
-  const {valid} = await inst.$refs.formRef.validate()
+  const {valid} = await refForm.value.validate()
   if (!valid) {
     return
   }
@@ -277,33 +279,31 @@ const onClickSubmit = async () => {
 }
 
 const createProxy = (data) => {
-  inst.$refs.myLoading.show()
+  refMyLoading.value.show()
   api.createProxy(data).then(resp => {
     console.log('[api.createProxy]', resp)
-    // inst.$refs.mySnackbar.show('创建完成，即将跳转...')
     router.push('/proxy')
   }).catch(err => {
-    inst.$refs.mySnackbar.show(err)
+    refMySnackbar.value.show(err)
   }).finally(() => {
-    inst.$refs.myLoading.hide()
+    refMyLoading.value.hide()
   })
 }
 
 const updateProxy = (id, data) => {
-  inst.$refs.myLoading.show()
+  refMyLoading.value.show()
   api.updateProxy(id, data).then(resp => {
     console.log('[api.createProxy]', resp)
-    // inst.$refs.mySnackbar.show('修改完成，即将跳转...')
     router.push('/proxy')
   }).catch(err => {
-    inst.$refs.mySnackbar.show(err)
+    refMySnackbar.value.show(err)
   }).finally(() => {
-    inst.$refs.myLoading.hide()
+    refMyLoading.value.hide()
   })
 }
 
 const loadProxy = (id) => {
-  inst.$refs.myLoading.show()
+  refMyLoading.value.show()
   api.getProxy(id).then(resp => {
     const tmpForm = resp.data.data
     formData.value.proxyType.items.filter(item => {
@@ -320,9 +320,9 @@ const loadProxy = (id) => {
     // 公网域名
     formData.value.domain.value = handleProxyDomain(tmpForm)
   }).catch(err => {
-    inst.$refs.mySnackbar.show(err)
+    refMySnackbar.value.show(err)
   }).finally(() => {
-    inst.$refs.myLoading.hide()
+    refMyLoading.value.hide()
   })
 }
 
@@ -343,10 +343,12 @@ export default defineComponent({
     router = useRouter()
     onMounted(onMountedHandler)
     return {
-      formRef,
       formData,
       onClickSubmit,
       showTipsModal,
+      refMySnackbar,
+      refMyLoading,
+      refForm,
     }
   }
 })

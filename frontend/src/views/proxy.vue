@@ -4,7 +4,7 @@
     <div class="ml-2 mr-2">
       <div class="flex-items-between ml-2 mr-2">
         <div>
-          <v-chip class="pointer" color="primary" label>
+          <v-chip class="pointer" color="primary" label @click="onClickLoadProxies">
             <v-icon icon="view_list" start></v-icon>
             规则列表
           </v-chip>
@@ -20,9 +20,17 @@
           -->
 
         </div>
-        <v-btn color="primary" variant="tonal" @click="$router.push('/proxy-edit')">
-          创建规则
-        </v-btn>
+        <div class="flex-items-between">
+          <v-chip class="pointer" color="primary" label @click="onClickReload" >
+            <v-icon icon="refresh" start></v-icon>
+            重载服务
+          </v-chip>
+          <div class="ma-2"></div>
+          <v-chip class="pointer" color="primary" label @click="$router.push('/proxy-edit')" >
+            <v-icon icon="add" start></v-icon>
+            创建规则
+          </v-chip>
+        </div>
       </div>
     </div>
 
@@ -54,23 +62,25 @@
                     </div>
                     <div class="ma-2 item-line">
                       <span class="label">内网：</span>
-                      <span class="dashed">{{ proxy.proxy_local_addr }}</span>
+                      <span class="dashed small-font overflow-hidden">{{ proxy.proxy_local_addr }}</span>
                       <!--
                       <v-icon icon="md:content_copy"></v-icon>
                       -->
                     </div>
                     <div class="ma-2 item-line">
                       <span class="label">公网：</span>
-                      <span class="dashed overflow-hidden">{{ handleProxyDomain(proxy) }}</span>
+                      <span class="dashed small-font overflow-hidden">{{ handleProxyDomain(proxy) }}</span>
                       <!--
                       <v-icon icon="md:content_copy"></v-icon>
                       -->
                     </div>
                     <div class="ma-2 item-line">
                       <span class="label">状态：</span>
-                      <span>{{ handleProxyStatusName(proxy.status) }}</span>&nbsp;
-                      <v-icon v-if="proxy.status===1" icon="sync" color="green" start></v-icon>
-                      <v-icon v-else icon="sync_disabled" color="orange" start></v-icon>
+                      <span class="small-font">{{ handleProxyStatusName(proxy.status) }}</span>&nbsp;
+                      <span class="small-font">
+                        <v-icon v-if="proxy.status===1" icon="sync" color="green" start></v-icon>
+                        <v-icon v-else icon="sync_disabled" color="orange" start></v-icon>
+                      </span>
                     </div>
                     <div class="ma-2 item-line" style="font-size: 12px; color: grey">
                       <span class="label">创建时间：</span>
@@ -108,7 +118,7 @@
 
 <script>
 import {defineComponent, getCurrentInstance, onMounted, ref} from "vue"
-import {FrpcLogin} from '../../wailsjs/go/main/App.js'
+import {FrpcLogin, FrpcStart} from '../../wailsjs/go/main/App.js'
 import api from "../common/api.js";
 import MyLoading from "../components/MyLoading.vue";
 import MySnackbar from "../components/MySnackbar.vue";
@@ -143,7 +153,6 @@ const loadProxies = () => {
   api.getProxies({limit: 20, page: 1}).then(resp => {
     console.log('[getProxies]', resp)
     proxies.value = resp.data.data
-
   }).catch(err => {
     refMySnackbar.value.show(err)
   }).finally(() => {
@@ -185,6 +194,23 @@ const onClickUpdateProxy = (proxy) => {
   router.push({path: '/proxy-edit', query: {id: proxy.id}})
 }
 
+const onClickReload = () => {
+  refMyLoading.value.show()
+  FrpcStart().then(resp => {
+    console.log('[FrpcStart] then ', resp)
+  }).catch(err => {
+    console.log('[FrpcStart] err', err)
+    refMySnackbar.value.show(err)
+  }).finally(() => {
+    console.log('[FrpcStart] finally')
+    refMyLoading.value.hide()
+  })
+}
+
+const onClickLoadProxies = () => {
+  loadProxies()
+}
+
 export default defineComponent({
   components: {MyConfirm, MyEmpty, MySnackbar, MyLoading},
   setup() {
@@ -203,6 +229,8 @@ export default defineComponent({
       refMyLoading,
       refMySnackbar,
       refMyConfirm,
+      onClickReload,
+      onClickLoadProxies,
     }
   }
 })
@@ -221,9 +249,14 @@ export default defineComponent({
     display: flex;
     flex-direction: row;
     justify-content: start;
+    align-items: center;
     overflow: hidden;
     white-space: nowrap;
 
+    .small-font {
+      font-size: 14px;
+      color: grey;
+    }
 
     .dashed {
       border-bottom: 1px dashed #c3c3c3;

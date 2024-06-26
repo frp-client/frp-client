@@ -19,128 +19,6 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-func (a *App) FrpcStart() (resp model.Response) {
-	//var configResp = struct {
-	//	Code uint             `json:"code"`
-	//	Msg  string           `json:"msg"`
-	//	Data model.FrpcConfig `json:"data"`
-	//}{}
-	//_, err := utils.HttpJsonGetUnmarshal(utils.FormatUrl(baseURL, "/api/frpc/config"), nil, &configResp)
-	//if err != nil {
-	//	resp = model.Response{
-	//		Ok:  false,
-	//		Msg: err.Error(),
-	//	}
-	//	return
-	//}
-	//if configResp.Data.ServerPort <= 0 {
-	//	resp = model.Response{
-	//		Ok:   false,
-	//		Msg:  "服务器端口配置错误",
-	//		Data: configResp,
-	//	}
-	//	return
-	//}
-	//
-	//var cfg = &v1.ClientCommonConfig{}
-	//cfg.Complete()
-	//
-	//cfg.ServerAddr = configResp.Data.ServerAddr
-	//cfg.ServerPort = int(configResp.Data.ServerPort)
-	//cfg.LoginFailExit = &configResp.Data.LoginFailExit
-	//
-	//cfg.AccessToken = "ed30dfa6e2c4070c7503722c73931ad8"
-	//
-	//var proxyCfgs = make([]v1.ProxyConfigurer, 0)
-	//
-	//{
-	//	pc := v1.NewProxyConfigurerByType(v1.ProxyType(v1.ProxyTypeHTTP))
-	//
-	//	switch tmpC := pc.(type) {
-	//	case *v1.HTTPProxyConfig:
-	//		tmpC.Name = "tmpVhostName"
-	//		tmpC.Transport.BandwidthLimitMode = "client"
-	//
-	//		tmpC.LocalIP = "127.0.0.1"
-	//		tmpC.LocalPort = 8000
-	//
-	//		tmpC.CustomDomains = make([]string, 0)
-	//		tmpC.CustomDomains = append(tmpC.CustomDomains, "www05.frp.local.me")
-	//
-	//		proxyCfgs = append(proxyCfgs, pc)
-	//	case *v1.HTTPSProxyConfig:
-	//		//certFile, keyFile, _ := parseCertToFile(vhost.Id, []byte(vhost.CrtPath), []byte(vhost.KeyPath))
-	//		//
-	//		//// 参考frp实际运行的配置数据结构填充
-	//		//tmpC.Name = tmpVhostName
-	//		//tmpC.Transport.BandwidthLimitMode = "client"
-	//		//
-	//		//tmpC.LocalIP = host
-	//		//tmpC.LocalPort = utils.StringToInt(port)
-	//		//
-	//		//tmpC.CustomDomains = make([]string, 0)
-	//		//tmpC.CustomDomains = append(tmpC.CustomDomains, vhost.CustomDomain)
-	//		//
-	//		//tmpC.Plugin.Type = "https2http"
-	//		//tmpC.Plugin.ClientPluginOptions = &v1.HTTPS2HTTPPluginOptions{
-	//		//	Type:              "https2http",
-	//		//	LocalAddr:         vhost.LocalAddr,
-	//		//	HostHeaderRewrite: tmpC.LocalIP,
-	//		//	RequestHeaders: v1.HeaderOperations{
-	//		//		Set: map[string]string{
-	//		//			"x-from-where": "frp",
-	//		//		},
-	//		//	},
-	//		//	CrtPath: certFile,
-	//		//	KeyPath: keyFile,
-	//		//}
-	//		//
-	//		//proxyCfg = tmpC
-	//	case *v1.TCPProxyConfig:
-	//		//tmpC.Name = tmpVhostName
-	//		//tmpC.Transport.BandwidthLimitMode = "client"
-	//		//
-	//		//tmpC.LocalIP = host
-	//		//tmpC.LocalPort = utils.StringToInt(port)
-	//		//
-	//		//tmpC.RemotePort = vhost.RemotePort
-	//		//
-	//		//proxyCfg = tmpC
-	//	case *v1.TCPMuxProxyConfig:
-	//		//tmpC.Name = tmpVhostName
-	//		//tmpC.Transport.BandwidthLimitMode = "client"
-	//		//
-	//		//tmpC.LocalIP = host
-	//		//tmpC.LocalPort = utils.StringToInt(port)
-	//		//
-	//		//tmpC.CustomDomains = make([]string, 0)
-	//		//tmpC.CustomDomains = append(tmpC.CustomDomains, vhost.CustomDomain)
-	//		//
-	//		//tmpC.Multiplexer = "httpconnect"
-	//		//
-	//		//proxyCfg = tmpC
-	//		//
-	//	default:
-	//
-	//	}
-	//}
-	//
-	//if err = a.frpcStartService(cfg, proxyCfgs, make([]v1.VisitorConfigurer, 0), ""); err != nil {
-	//	resp = model.Response{
-	//		Ok:  false,
-	//		Msg: err.Error(),
-	//	}
-	//	return
-	//}
-	//
-	//resp = model.Response{
-	//	Ok: true,
-	//}
-
-	return
-
-}
-
 func (a *App) frpcGracefulClose(svr *client.Service) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
@@ -154,22 +32,29 @@ func (a *App) frpcStartService(cfg *v1.ClientCommonConfig, proxyCfgs []v1.ProxyC
 		log.Infof("start frpc service for config file [%s]", cfgFile)
 		defer log.Infof("frpc service for config file [%s] stopped", cfgFile)
 	}
-	svr, err := client.NewService(client.ServiceOptions{
-		Common:         cfg,
-		ProxyCfgs:      proxyCfgs,
-		VisitorCfgs:    visitorCfgs,
-		ConfigFilePath: cfgFile,
-	})
-	if err != nil {
-		return err
-	}
+	if a.frpcSvc == nil {
+		log2.Println("[frpcSvcRun]")
+		var err error
+		a.frpcSvc, err = client.NewService(client.ServiceOptions{
+			Common:         cfg,
+			ProxyCfgs:      proxyCfgs,
+			VisitorCfgs:    visitorCfgs,
+			ConfigFilePath: cfgFile,
+		})
+		if err != nil {
+			return err
+		}
 
-	shouldGracefulClose := cfg.Transport.Protocol == "kcp" || cfg.Transport.Protocol == "quic"
-	// Capture the exit signal if we use kcp or quic.
-	if shouldGracefulClose {
-		go a.frpcGracefulClose(svr)
+		shouldGracefulClose := cfg.Transport.Protocol == "kcp" || cfg.Transport.Protocol == "quic"
+		// Capture the exit signal if we use kcp or quic.
+		if shouldGracefulClose {
+			go a.frpcGracefulClose(a.frpcSvc)
+		}
+		return a.frpcSvc.Run(context.Background())
+	} else {
+		log2.Println("[frpcSvcUpdate]")
+		return a.frpcSvc.UpdateAllConfigurer(proxyCfgs, visitorCfgs)
 	}
-	return svr.Run(context.Background())
 }
 
 func (a *App) FrpcLogin() {
@@ -181,7 +66,8 @@ func (a *App) OnFrpcUpdateConfig(optionalData ...interface{}) {
 	log2.Println("[OnFrpcUpdateConfig]", utils.ToJsonString(optionalData))
 }
 
-func (a *App) OnFrpcNewConfig() error {
+// FrpcStart 启动或者重载proxies
+func (a *App) FrpcStart() error {
 	var configResp = struct {
 		Code uint             `json:"code"`
 		Msg  string           `json:"msg"`
@@ -221,6 +107,9 @@ func (a *App) OnFrpcNewConfig() error {
 	}
 
 	a.frpcProxyCfgs = a.parseFrpcProxyConfig(&proxiesResp.Data.List)
+	if len(*a.frpcProxyCfgs) == 0 {
+		return errors.New("没有可用配置数据")
+	}
 	if err = a.frpcStartService(a.parseFrpcClientConfig(&configResp.Data), *a.frpcProxyCfgs, make([]v1.VisitorConfigurer, 0), ""); err != nil {
 		return err
 	}
@@ -339,7 +228,7 @@ func (a *App) WebServer(port ...int) {
 	if len(port) > 0 {
 		p = port[0]
 	}
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", p))
+	l, err := net.Listen(fiber.NetworkTCP4, fmt.Sprintf(":%d", p))
 	if err != nil {
 		return
 	}

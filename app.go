@@ -6,6 +6,7 @@ import (
 	"github.com/energye/systray"
 	"github.com/frp-client/frp-client/model"
 	"github.com/frp-client/frp-client/utils"
+	"github.com/frp-client/frp/client"
 	v1 "github.com/frp-client/frp/pkg/config/v1"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"log"
@@ -18,6 +19,7 @@ type App struct {
 	frpcUsersession *model.UserSession
 	frpcConfig      *model.FrpcConfig
 	frpcProxyCfgs   *[]v1.ProxyConfigurer
+	frpcSvc         *client.Service
 }
 
 // NewApp creates a new App application struct
@@ -48,7 +50,7 @@ func (a *App) startup(ctx context.Context) {
 		//runtime.EventsOn(ctx, "onFrpcNewConfig", a.OnFrpcNewConfig)
 		runtime.EventsOn(ctx, "onFrpcUpdateConfig", a.OnFrpcUpdateConfig)
 
-		err = a.OnFrpcNewConfig()
+		err = a.FrpcStart()
 		if err != nil {
 			a.WindowMessage(fmt.Sprintf("客户端启动失败：%s", err.Error()), "提示")
 			return
