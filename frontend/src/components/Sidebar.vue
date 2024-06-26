@@ -62,11 +62,6 @@ const menus = ref([
     name: '关于',
     to: '/about',
     activeClass: '',
-  }, {
-    id: 6,
-    name: '调试',
-    to: '/debug',
-    activeClass: '',
   }
 ])
 

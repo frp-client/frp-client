@@ -4,6 +4,9 @@
     <v-form ref="formRef" style="width: 400px; margin: 0 auto; padding-top: 100px;">
       <v-container>
 
+        <div v-if="formData.username.value" style="position: absolute; top: 120px;font-weight: bold">
+          当前已登录账号：{{ formData.username.value.substring(0, 12) }}...
+        </div>
         <v-row>
           <v-col cols="12" md="12">
             <v-text-field

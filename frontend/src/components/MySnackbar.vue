@@ -1,7 +1,7 @@
 <template>
 
   <v-overlay v-model="data.show" :persistent="data.persistent" style="--wails-draggable:drag">
-    <v-snackbar v-model="data.show" multi-line>
+    <v-snackbar v-model="data.show" :timeout="data.timeout" multi-line>
       {{ data.content }}
       <template v-slot:actions>
         <v-btn color="red" variant="text" @click="resetSnackbar">关 闭</v-btn>

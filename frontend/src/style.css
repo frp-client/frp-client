@@ -127,3 +127,8 @@ body {
 .pointer {
     cursor: pointer;
 }
+
+.dashed-x {
+    color: grey;
+    border-bottom: 1px dashed #c3c3c3;
+}

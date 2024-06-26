@@ -3,129 +3,133 @@
 
     <v-form ref="refForm">
       <v-container>
-        <v-expansion-panels v-model="formData.expandModel" class="mb-5">
-          <v-expansion-panel>
-            <v-expansion-panel-title :readonly="true">
-              <v-chip class="" color="primary" label>
-                <v-icon icon="tune" start></v-icon>
-                <span>基础配置</span>
-              </v-chip>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <v-row>
-                <v-col cols="6" md="6">
-                  <v-select
-                      label="代理类型"
-                      placeholder="请选择代理类型"
-                      clearable
-                      v-model="formData.proxyType.select"
-                      :items="formData.proxyType.items"
-                      :rules="formData.proxyType.rule"
-                      item-title="label"
-                      item-value="value"
-                      variant="underlined"
-                  >
-                  </v-select>
-                </v-col>
-                <v-col cols="6" md="6">
-                  <v-text-field
-                      label="代理名称"
-                      placeholder="请输入代理名称"
-                      v-model="formData.proxyName.value"
-                      :rules="formData.proxyName.rule"
-                      variant="underlined"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="6" md="6">
-                  <v-text-field
-                      label="本地地址"
-                      placeholder="请输入本地地址(ip+端口格式)"
-                      v-model="formData.localAddr.value"
-                      :rules="formData.localAddr.rule"
-                      variant="underlined"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="6" md="6">
-                  <v-select
-                      label="状态"
-                      v-model="formData.proxyStatus.select"
-                      :items="formData.proxyStatus.items"
-                      :rules="formData.proxyStatus.rule"
-                      item-title="label"
-                      item-value="value"
-                      variant="underlined"
-                  ></v-select>
-                </v-col>
-              </v-row>
+        <v-row>
+          <v-col cols="12" md="12">
+            <v-chip class="" color="primary" label>
+              <v-icon icon="tune" start></v-icon>
+              <span>基础配置</span>
+            </v-chip>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="6" md="6">
+            <v-select
+                label="代理类型"
+                placeholder="请选择代理类型"
+                clearable
+                v-model="formData.proxyType.select"
+                :items="formData.proxyType.items"
+                :rules="formData.proxyType.rule"
+                item-title="label"
+                item-value="value"
+                variant="underlined"
+            >
+            </v-select>
+          </v-col>
+          <v-col cols="6" md="6">
+            <v-text-field
+                label="代理名称"
+                placeholder="请输入代理名称"
+                v-model="formData.proxyName.value"
+                :rules="formData.proxyName.rule"
+                variant="underlined"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="6" md="6">
+            <v-text-field
+                label="本地地址"
+                placeholder="请输入本地地址(ip+端口格式)"
+                v-model="formData.localAddr.value"
+                :rules="formData.localAddr.rule"
+                variant="underlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="6" md="6">
+            <v-select
+                label="状态"
+                v-model="formData.proxyStatus.select"
+                :items="formData.proxyStatus.items"
+                :rules="formData.proxyStatus.rule"
+                item-title="label"
+                item-value="value"
+                variant="underlined"
+            ></v-select>
+          </v-col>
+        </v-row>
 
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
+        <v-row>
+          <v-col cols="6" md="6">
+            <v-chip color="rgb(92, 187, 246)" label>
+              <v-icon icon="more_horiz" start></v-icon>
+              <span>更多配置</span>
+            </v-chip>
+          </v-col>
+          <v-col cols="6" md="6" class="flex-items-end flex-align-items-center">
+            <div @click="onChangeCustomDomain" class="pointer">
+              <v-icon
+                  v-if="isCustomDomain" icon="select_check_box" style="justify-content: flex-end">
+              </v-icon>
+              <v-icon v-else icon="check_box_outline_blank"></v-icon>
+              自定义配置域名
+            </div>
+          </v-col>
+        </v-row>
 
-        <v-expansion-panels class="mb-5">
-          <v-expansion-panel>
-            <v-expansion-panel-title>
-              <v-chip class="" color="primary" label>
-                <v-icon icon="more_horiz" start></v-icon>
-                <span>更多配置</span>
-              </v-chip>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <v-row>
-                <v-col cols="6" md="6">
-                  <v-text-field
-                      label="公网域名"
-                      placeholder="默认自动分配"
-                      v-model="formData.domain.value"
-                      :rules="formData.domain.rule"
-                      variant="underlined"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="6" md="6">
-                  <v-text-field
-                      label="公网端口"
-                      placeholder="默认自动分配"
-                      v-model="formData.remotePort.value"
-                      :rules="formData.remotePort.rule"
-                      type="number"
-                      variant="underlined"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="6" md="6">
-                  <v-file-input
-                      label="证书文件"
-                      placeholder="默认自动分配"
-                      v-model="formData.sslCrt.rule"
-                      :rules="formData.sslCrt.rule"
-                      variant="underlined"
-                  ></v-file-input>
+        <v-row>
+          <v-col cols="6" md="6">
+            <v-text-field
+                label="公网域名"
+                placeholder="默认自动分配"
+                v-model="formData.domain.value"
+                :rules="formData.domain.rule"
+                variant="underlined"
+                :disabled="isCustomDomain===false"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="6" md="6" v-if="[3,4].includes(formData.proxyType.select)">
+            <v-text-field
+                label="公网端口"
+                placeholder="默认自动分配"
+                v-model="formData.remotePort.value"
+                :rules="formData.remotePort.rule"
+                type="number"
+                variant="underlined"
+                disabled
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-row v-if="formData.proxyType.select===2">
+          <v-col cols="6" md="6">
+            <v-file-input
+                label="证书文件"
+                placeholder="默认自动分配"
+                v-model="formData.sslCrt.rule"
+                :rules="formData.sslCrt.rule"
+                variant="underlined"
+                :disabled="isCustomDomain===false"
+            ></v-file-input>
 
-                </v-col>
-                <v-col cols="6" md="6">
-                  <v-file-input
-                      label="证书密钥"
-                      placeholder="默认自动分配"
-                      v-model="formData.sslKey.rule"
-                      :rules="formData.sslKey.rule"
-                      variant="underlined"
-                  ></v-file-input>
+          </v-col>
+          <v-col cols="6" md="6">
+            <v-file-input
+                label="证书密钥"
+                placeholder="默认自动分配"
+                v-model="formData.sslKey.rule"
+                :rules="formData.sslKey.rule"
+                variant="underlined"
+                :disabled="isCustomDomain===false"
+            ></v-file-input>
 
-                </v-col>
-              </v-row>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
+          </v-col>
+        </v-row>
 
         <v-row>
           <v-col cols="12" md="12" class="d-flex justify-end">
             <v-btn color="primary" @click="onClickSubmit">提交</v-btn>
           </v-col>
         </v-row>
-
       </v-container>
     </v-form>
 
@@ -168,6 +172,7 @@ const showTipsModal = ref(false)
 const refForm = ref(false)
 const refMySnackbar = ref(MySnackbar)
 const refMyLoading = ref(MyLoading)
+const isCustomDomain = ref(false)
 
 const formData = ref({
   expandModel: [0],
@@ -336,6 +341,12 @@ const onMountedHandler = () => {
   }
 }
 
+const onChangeCustomDomain = () => {
+  refMySnackbar.value.show('暂未开放')
+  // return
+  isCustomDomain.value = !isCustomDomain.value
+}
+
 export default defineComponent({
   components: {MyConfirm, MySnackbar, MyLoading},
   setup() {
@@ -349,6 +360,8 @@ export default defineComponent({
       refMySnackbar,
       refMyLoading,
       refForm,
+      isCustomDomain,
+      onChangeCustomDomain,
     }
   }
 })

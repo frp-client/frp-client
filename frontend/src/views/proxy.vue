@@ -62,14 +62,19 @@
                     </div>
                     <div class="ma-2 item-line">
                       <span class="label">内网：</span>
-                      <span class="dashed small-font overflow-hidden">{{ proxy.proxy_local_addr }}</span>
+                      <span class="dashed small-font overflow-hidden" @click="copyToClipboard(proxy.proxy_local_addr)">
+                        {{ proxy.proxy_local_addr }}
+                      </span>
                       <!--
                       <v-icon icon="md:content_copy"></v-icon>
                       -->
                     </div>
                     <div class="ma-2 item-line">
                       <span class="label">公网：</span>
-                      <span class="dashed small-font overflow-hidden">{{ handleProxyDomain(proxy) }}</span>
+                      <span class="dashed small-font overflow-hidden"
+                            @click="copyToClipboard(handleProxyDomain(proxy))">
+                        {{ handleProxyDomain(proxy) }}
+                      </span>
                       <!--
                       <v-icon icon="md:content_copy"></v-icon>
                       -->
@@ -128,6 +133,7 @@ import {timeFormat} from "../common/helper.js";
 import {useRoute, useRouter} from "vue-router";
 import {handleProxyDomain} from '../common/proxy.js'
 import MyConfirm from "../components/MyConfirm.vue";
+import clipboard from "../common/clipboard.js";
 
 let inst = null
 let route = null
@@ -215,6 +221,11 @@ const onClickLoadProxies = () => {
   loadProxies()
 }
 
+const copyToClipboard = (url) => {
+  clipboard.write(url, false)
+  refMySnackbar.value.show('已复制：' + url, {timeout: 1000})
+}
+
 export default defineComponent({
   components: {MyConfirm, MyEmpty, MySnackbar, MyLoading},
   setup() {
@@ -235,6 +246,7 @@ export default defineComponent({
       refMyConfirm,
       onClickReload,
       onClickLoadProxies,
+      copyToClipboard,
     }
   }
 })
