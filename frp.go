@@ -120,9 +120,9 @@ func (a *App) FrpcStart() error {
 
 func (a *App) apiRequestHeaders(headers ...map[string]string) (h map[string]string) {
 	h = make(map[string]string)
-	if a.frpcUsersession != nil {
-		h["X_CLIENT_ID"] = a.frpcUsersession.MachineId
-		h["Authorization"] = fmt.Sprintf("Bearer %s", a.frpcUsersession.JwtToken)
+	if a.frpcUserSession != nil {
+		h["X_CLIENT_ID"] = a.frpcUserSession.MachineId
+		h["Authorization"] = fmt.Sprintf("Bearer %s", a.frpcUserSession.JwtToken)
 	} else {
 		h["X_CLIENT_ID"] = a.ClientId()
 	}
@@ -142,7 +142,7 @@ func (a *App) parseFrpcClientConfig(config *model.FrpcConfig) *v1.ClientCommonCo
 	cfg.ServerPort = int(config.ServerPort)
 	cfg.LoginFailExit = &config.LoginFailExit
 
-	cfg.AccessToken = a.frpcUsersession.AccessToken
+	cfg.AccessToken = a.frpcUserSession.AccessToken
 
 	return cfg
 }

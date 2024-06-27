@@ -22,7 +22,7 @@ import (
 // App struct
 type App struct {
 	ctx             context.Context
-	frpcUsersession *model.UserSession
+	frpcUserSession *model.UserSession
 	frpcConfig      *model.FrpcConfig
 	appConfig       *model.AppConfig
 	frpcProxyCfgs   *[]v1.ProxyConfigurer
@@ -188,7 +188,7 @@ func (a *App) initApp() {
 		a.WindowMessage(fmt.Sprintf("客户端授权失败：%s", err.Error()), "提示")
 		return
 	}
-	a.frpcUsersession = &session
+	a.frpcUserSession = &session
 
 	// 注册事件，并启动frpc
 	//runtime.EventsOn(ctx, "onFrpcNewConfig", a.OnFrpcNewConfig)
