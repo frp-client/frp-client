@@ -102,26 +102,25 @@
         </v-row>
         <v-row v-if="formData.proxyType.select===2">
           <v-col cols="6" md="6">
-            <v-file-input
+            <v-text-field
                 label="证书文件"
                 placeholder="默认自动分配"
-                v-model="formData.sslCrt.rule"
+                v-model="formData.sslCrt.value"
                 :rules="formData.sslCrt.rule"
                 variant="underlined"
-                :disabled="isCustomDomain===false"
-            ></v-file-input>
+                disabled
+            ></v-text-field>
 
           </v-col>
           <v-col cols="6" md="6">
-            <v-file-input
+            <v-text-field
                 label="证书密钥"
                 placeholder="默认自动分配"
-                v-model="formData.sslKey.rule"
+                v-model="formData.sslKey.value"
                 :rules="formData.sslKey.rule"
                 variant="underlined"
-                :disabled="isCustomDomain===false"
-            ></v-file-input>
-
+                disabled
+            ></v-text-field>
           </v-col>
         </v-row>
 
@@ -155,7 +154,7 @@
 </template>
 
 <script>
-import {defineComponent, getCurrentInstance, onMounted, ref} from "vue";
+import {defineComponent, onMounted, ref} from "vue";
 import api from "../common/api.js";
 import MyLoading from "../components/MyLoading.vue";
 import MySnackbar from "../components/MySnackbar.vue";
@@ -165,7 +164,6 @@ import MyConfirm from "../components/MyConfirm.vue";
 
 let route = null
 let router = null
-let inst = null
 let id = null
 
 const showTipsModal = ref(false)
@@ -266,6 +264,8 @@ const formatProxyForm = () => {
     proxy_local_addr: formData.value.localAddr.value,
     proxy_extra: {
       subdomain: '',
+      ssl_crt: formData.value.sslCrt.value,
+      ssl_key: formData.value.sslKey.value,
     },
     status: +formData.value.proxyStatus.select,
   }
@@ -332,8 +332,6 @@ const loadProxy = (id) => {
 }
 
 const onMountedHandler = () => {
-  inst = getCurrentInstance().ctx
-
   resetFormData()
   id = route.query['id']
   if (id) {

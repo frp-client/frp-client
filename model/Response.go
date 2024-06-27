@@ -8,6 +8,8 @@ type Response struct {
 
 type ProxyExtra struct {
 	Subdomain string `json:"subdomain"`
+	SslCrt    string `json:"ssl_crt"`
+	SslKey    string `json:"ssl_key"`
 }
 
 type RespUserProxy struct {
@@ -19,6 +21,7 @@ type RespUserProxy struct {
 	ProxyRemotePort int        `json:"proxy_remote_port"`
 	ProxyLocalAddr  string     `json:"proxy_local_addr"`
 	Domain          string     `json:"domain"`
+	SubDomain       string     `json:"sub_domain"`
 	ProxyExtra      ProxyExtra `json:"proxy_extra"`
 	Status          int        `json:"status"`
 	CreatedAt       int64      `json:"created_at"`

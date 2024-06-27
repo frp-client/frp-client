@@ -39,7 +39,11 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+
 	runtime.EventsOn(ctx, "onAppMounted", a.onAppMounted)
+	// 注册事件，并启动frpc
+	//runtime.EventsOn(ctx, "onFrpcNewConfig", a.OnFrpcNewConfig)
+	runtime.EventsOn(a.ctx, "onFrpcUpdateConfig", a.OnFrpcUpdateConfig)
 
 	go systray.Run(a.systemTray, func() {})
 	go a.initApp()
@@ -201,11 +205,6 @@ func (a *App) initApp() {
 		return
 	}
 	a.frpcUserSession = &session
-
-	// 注册事件，并启动frpc
-	//runtime.EventsOn(ctx, "onFrpcNewConfig", a.OnFrpcNewConfig)
-	runtime.EventsOn(a.ctx, "onFrpcUpdateConfig", a.OnFrpcUpdateConfig)
-
 	err = a.FrpcStart()
 	if err != nil {
 		a.WindowMessage(fmt.Sprintf("客户端启动失败：%s", err.Error()), "提示")
@@ -215,7 +214,6 @@ func (a *App) initApp() {
 }
 
 func (a *App) AppConfigUpdate(appConfig model.AppConfig) error {
-	log.Println("[========>appConfig]", utils.ToJsonString(appConfig))
 	if appConfig.LocalWebServer {
 		if appConfig.LocalWebServerPort <= 0 || appConfig.LocalWebServerPort >= 65535 {
 			return errors.New("WEB端口配置不合法")

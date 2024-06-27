@@ -10,6 +10,7 @@ import (
 	"github.com/frp-client/frp/client"
 	v1 "github.com/frp-client/frp/pkg/config/v1"
 	"github.com/gofiber/fiber/v2"
+	"io/fs"
 	log2 "log"
 	"net"
 	"os"
@@ -99,7 +100,7 @@ func (a *App) FrpcStart() error {
 		} `json:"data"`
 	}{}
 	_, err = utils.HttpJsonGetUnmarshal(
-		utils.FormatUrl(apiServer, "/api/frpc/proxies"),
+		utils.FormatUrl(apiServer, "/api/frpc/proxies?limit=20"),
 		a.apiRequestHeaders(),
 		&proxiesResp,
 	)
@@ -175,7 +176,14 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 
 			proxyCfgs = append(proxyCfgs, pc)
 		case *v1.HTTPSProxyConfig:
-			//certFile, keyFile, _ := parseCertToFile(vhost.Id, []byte(vhost.CrtPath), []byte(vhost.KeyPath))
+			certFile, keyFile, err := a.parseCertToFile(
+				utils.Md5(fmt.Sprintf("%d,%s", proxy.Id, proxy.SubDomain)),
+				[]byte(proxy.ProxyExtra.SslCrt),
+				[]byte(proxy.ProxyExtra.SslKey),
+			)
+			if err != nil {
+				continue
+			}
 
 			// 参考frp实际运行的配置数据结构填充
 			tmpC.Name = proxy.ProxyExtra.Subdomain
@@ -191,8 +199,8 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 			tmpC.Plugin.ClientPluginOptions = &v1.HTTPS2HTTPPluginOptions{
 				Type:              "https2http",
 				LocalAddr:         proxy.ProxyLocalAddr,
-				CrtPath:           "certFile",
-				KeyPath:           "keyFile",
+				CrtPath:           certFile,
+				KeyPath:           keyFile,
 				HostHeaderRewrite: tmpC.LocalIP,
 				RequestHeaders: v1.HeaderOperations{
 					Set: map[string]string{
@@ -226,6 +234,34 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 	}
 
 	return &proxyCfgs
+}
+
+func (a *App) parseCertToFile(id string, certFileBuff, keyFileBuff []byte) (certFile, keyFile string, err error) {
+	certFile = utils.AppTempFile("certs", fmt.Sprintf("%sC", id))
+	keyFile = utils.AppTempFile("certs", fmt.Sprintf("%sK", id))
+
+	var w = true
+	// 比较并修改
+	if len(certFileBuff) > 0 && bytes.Compare(utils.ReadFileAsByte(certFile), certFileBuff) == 0 {
+		w = false
+	}
+	if w {
+		if err = os.WriteFile(certFile, certFileBuff, fs.ModePerm); err != nil {
+			return
+		}
+	}
+
+	w = true
+	// 比较并修改
+	if len(keyFile) > 0 && bytes.Compare(utils.ReadFileAsByte(keyFile), keyFileBuff) == 0 {
+		w = false
+	}
+	if w {
+		if err = os.WriteFile(keyFile, keyFileBuff, fs.ModePerm); err != nil {
+			return
+		}
+	}
+	return
 }
 
 func (a *App) startWebServer() error {

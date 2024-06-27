@@ -41,8 +41,8 @@
       </v-container>
     </v-form>
 
-    <MySnackbar ref="mySnackbar"></MySnackbar>
-    <MyLoading ref="myLoading"></MyLoading>
+    <MySnackbar ref="refMySnackbar"></MySnackbar>
+    <MyLoading ref="refMyLoading"></MyLoading>
 
 
   </div>
@@ -57,9 +57,10 @@ import MyLoading from "../components/MyLoading.vue";
 import {LoginSuccess} from "../../wailsjs/go/main/App.js";
 import {getSession} from "../common/vars.js";
 
-let inst = null
+const refForm = ref(false)
+const refMyLoading = ref(MyLoading)
+const refMySnackbar = ref(MySnackbar)
 
-const formRef = ref(null)
 const formData = ref({
   username: {
     value: '',
@@ -129,9 +130,12 @@ export default defineComponent({
     })
     onBeforeMount(onBeforeMountHandler)
     return {
-      formRef,
       formData,
       onClickSubmit,
+      refMySnackbar,
+      refMyLoading,
+      refForm,
+
     }
   }
 })
