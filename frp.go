@@ -227,21 +227,74 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 	return &proxyCfgs
 }
 
-func (a *App) startWebServer() {
-	var p = a.appConfig.LocalServerPort
+func (a *App) startWebServer() error {
+	defer func() { recover() }()
 
+	var p = a.appConfig.LocalWebServerPort
 	l, err := net.Listen(fiber.NetworkTCP4, fmt.Sprintf(":%d", p))
 	if err != nil {
 		log2.Println("[本地web服务端口被占用]", err.Error())
-		return
+		return err
 	}
 	_ = l.Close()
 
 	app := fiber.New()
-	app.Static("/", a.appConfig.LocalServerPath, fiber.Static{Browse: true})
+	app.Static("/", a.appConfig.LocalWebServerPath, fiber.Static{Browse: true})
 	err = app.Listen(fmt.Sprintf(":%d", p))
 	if err != nil {
 		log2.Println("[本地web服务启动失败]", err.Error())
-		return
+		return err
+	}
+	return nil
+}
+
+func (a *App) startTcpServer() error {
+	defer func() { recover() }()
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", a.appConfig.LocalTcpServerPort))
+	if err != nil {
+		log2.Println("[本地tcp服务端口被占用]", err.Error())
+		return err
+	}
+	var buf []byte
+	for {
+		accept, err := ln.Accept()
+		if err != nil {
+			log2.Println("[本地tcp服务Accept]", err.Error())
+			continue
+		}
+		buf = make([]byte, 1024)
+		_, err = accept.Read(buf)
+		if err != nil {
+			log2.Println("[本地tcp服务Read]", err.Error())
+			continue
+		}
+		_, err = accept.Write([]byte(a.appConfig.LocalTcpServerResponse))
+		if err != nil {
+			log2.Println("[本地tcp服务Write]", err.Error())
+			continue
+		}
+	}
+}
+
+func (a *App) startUdpServer() error {
+	defer func() { recover() }()
+	ln, err := net.ListenUDP("udp", &net.UDPAddr{Port: a.appConfig.LocalUdpServerPort})
+	if err != nil {
+		log2.Println("[本地tcp服务启动失败]", err.Error())
+		return err
+	}
+	var buf []byte
+	for {
+		buf = make([]byte, 1024)
+		_, addr, err := ln.ReadFromUDP(buf)
+		if err != nil {
+			log2.Println("[本地udp服务Read]", err.Error())
+			continue
+		}
+		_, err = ln.WriteToUDP([]byte(a.appConfig.LocalUdpServerResponse), addr)
+		if err != nil {
+			log2.Println("[本地udp服务Write]", err.Error())
+			continue
+		}
 	}
 }

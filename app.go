@@ -132,13 +132,19 @@ func (a *App) initAppConfig() (model.AppConfig, error) {
 	if err != nil {
 		//初始化
 		config = model.AppConfig{
-			ApiServer:       apiServer,
-			LocalServer:     true,
-			LocalServerPort: localWebServerPort,
-			LocalServerPath: utils.AppPath(),
-			Log:             true,
-			LogPath:         utils.AppPath(),
-			UpdatedAt:       utils.UnixTimestamp(),
+			ApiServer:              apiServer,
+			LocalWebServer:         true,
+			LocalWebServerPort:     localWebServerPort,
+			LocalWebServerPath:     utils.AppPath(),
+			LocalTcpServer:         true,
+			LocalTcpServerPort:     16666,
+			LocalTcpServerResponse: "tcp ok",
+			LocalUdpServer:         true,
+			LocalUdpServerPort:     16666,
+			LocalUdpServerResponse: "udp ok",
+			Log:                    true,
+			LogPath:                utils.AppPath(),
+			UpdatedAt:              utils.UnixTimestamp(),
 		}
 
 		//utils.AesDecrypt
@@ -176,8 +182,14 @@ func (a *App) initApp() {
 	}
 
 	// 是否启动本地web服务
-	if config.LocalServer == true {
-		go a.startWebServer()
+	if config.LocalWebServer == true {
+		go func() { _ = a.startWebServer() }()
+	}
+	if config.LocalTcpServer == true {
+		go func() { _ = a.startTcpServer() }()
+	}
+	if config.LocalUdpServer == true {
+		go func() { _ = a.startUdpServer() }()
 	}
 
 	// 准备初始化并启动frpc
@@ -204,13 +216,23 @@ func (a *App) initApp() {
 
 func (a *App) AppConfigUpdate(appConfig model.AppConfig) error {
 	log.Println("[========>appConfig]", utils.ToJsonString(appConfig))
-	if appConfig.LocalServer {
-		if appConfig.LocalServerPort <= 0 || appConfig.LocalServerPort >= 65535 {
-			return errors.New("端口配置不合法")
+	if appConfig.LocalWebServer {
+		if appConfig.LocalWebServerPort <= 0 || appConfig.LocalWebServerPort >= 65535 {
+			return errors.New("WEB端口配置不合法")
+		}
+	}
+	if appConfig.LocalTcpServer {
+		if appConfig.LocalTcpServerPort <= 0 || appConfig.LocalTcpServerPort >= 65535 {
+			return errors.New("TCP端口配置不合法")
+		}
+	}
+	if appConfig.LocalUdpServer {
+		if appConfig.LocalUdpServerPort <= 0 || appConfig.LocalUdpServerPort >= 65535 {
+			return errors.New("UDP端口配置不合法")
 		}
 	}
 
-	stat, err := os.Stat(appConfig.LocalServerPath)
+	stat, err := os.Stat(appConfig.LocalWebServerPath)
 	if err != nil {
 		return errors.New(fmt.Sprintf("WEB根目录异常：%s", err.Error()))
 	}
@@ -243,19 +265,19 @@ func (a *App) AppConfigUpdate(appConfig model.AppConfig) error {
 	config, err := a.checkAppConfig()
 	if err != nil {
 		config = model.AppConfig{
-			ApiServer:       appConfig.ApiServer,
-			LocalServer:     appConfig.LocalServer,
-			LocalServerPort: appConfig.LocalServerPort,
-			LocalServerPath: appConfig.LocalServerPath,
-			Log:             appConfig.Log,
-			LogPath:         utils.AppPath(),
-			UpdatedAt:       utils.UnixTimestamp(),
+			ApiServer:          appConfig.ApiServer,
+			LocalWebServer:     appConfig.LocalWebServer,
+			LocalWebServerPort: appConfig.LocalWebServerPort,
+			LocalWebServerPath: appConfig.LocalWebServerPath,
+			Log:                appConfig.Log,
+			LogPath:            utils.AppPath(),
+			UpdatedAt:          utils.UnixTimestamp(),
 		}
 	} else {
 		config.ApiServer = appConfig.ApiServer
-		config.LocalServer = appConfig.LocalServer
-		config.LocalServerPort = appConfig.LocalServerPort
-		config.LocalServerPath = appConfig.LocalServerPath
+		config.LocalWebServer = appConfig.LocalWebServer
+		config.LocalWebServerPort = appConfig.LocalWebServerPort
+		config.LocalWebServerPath = appConfig.LocalWebServerPath
 		config.Log = appConfig.Log
 		config.UpdatedAt = utils.UnixTimestamp()
 	}

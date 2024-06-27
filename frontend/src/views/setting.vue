@@ -64,6 +64,83 @@
         </v-row>
 
         <v-row>
+          <v-col cols="2" md="2">
+            <v-select
+                label="本地TCP服务"
+                v-model="formData.localTcpServer.select"
+                :items="formData.localTcpServer.items"
+                :rules="formData.localTcpServer.rule"
+                item-title="label"
+                item-value="value"
+                variant="underlined"
+            ></v-select>
+          </v-col>
+          <v-col cols="2" md="2" v-if="formData.localTcpServer.select">
+            <v-text-field
+                label="端口"
+                v-model="formData.localTcpServerPort.value"
+                :rules="formData.localTcpServerPort.rule"
+                type="number"
+                variant="underlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="5" md="5" class="flex-items-center" v-if="formData.localTcpServer.select">
+            <v-text-field
+                label="TCP回复数据"
+                placeholder=""
+                v-model="formData.localTcpServerResponse.value"
+                :rules="formData.localTcpServerResponse.rule"
+                variant="underlined"
+            ></v-text-field>
+            <div class="ml-2"></div>
+          </v-col>
+          <v-col cols="3" md="3" class="flex-items-center" v-if="formData.localTcpServer.select">
+            <text class="dashed-x pointer" @click="copyToClipboard(handleLocalTcp(formData.localTcpServerPort.value))">
+              {{ handleLocalTcp(formData.localTcpServerPort.value) }}
+            </text>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="2" md="2">
+            <v-select
+                label="本地UDP服务"
+                v-model="formData.localUdpServer.select"
+                :items="formData.localUdpServer.items"
+                :rules="formData.localUdpServer.rule"
+                item-title="label"
+                item-value="value"
+                variant="underlined"
+            ></v-select>
+          </v-col>
+          <v-col cols="2" md="2" v-if="formData.localUdpServer.select">
+            <v-text-field
+                label="端口"
+                v-model="formData.localUdpServerPort.value"
+                :rules="formData.localUdpServerPort.rule"
+                type="number"
+                variant="underlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="5" md="5" class="flex-items-center" v-if="formData.localUdpServer.select">
+            <v-text-field
+                label="UDP回复数据"
+                placeholder=""
+                v-model="formData.localUdpServerResponse.value"
+                :rules="formData.localUdpServerResponse.rule"
+                variant="underlined"
+            ></v-text-field>
+            <div class="ml-2"></div>
+          </v-col>
+          <v-col cols="3" md="3" class="flex-items-center" v-if="formData.localUdpServer.select">
+            <text class="dashed-x pointer" @click="copyToClipboard(handleLocalUdp(formData.localUdpServerPort.value))">
+              {{ handleLocalUdp(formData.localUdpServerPort.value) }}
+            </text>
+          </v-col>
+        </v-row>
+
+
+        <v-row>
           <v-col cols="3" md="3">
             <v-select
                 label="日志"
@@ -150,6 +227,38 @@ const formData = ref({
     value: null,
     rule: [],
   },
+  localTcpServer: {
+    select: {label: '关闭', value: 0},
+    items: [
+      {label: '开启', value: 1},
+      {label: '关闭', value: 0},
+    ],
+    rule: [],
+  },
+  localTcpServerPort: {
+    value: null,
+    rule: [],
+  },
+  localTcpServerResponse: {
+    value: null,
+    rule: [],
+  },
+  localUdpServer: {
+    select: {label: '关闭', value: 0},
+    items: [
+      {label: '开启', value: 1},
+      {label: '关闭', value: 0},
+    ],
+    rule: [],
+  },
+  localUdpServerPort: {
+    value: null,
+    rule: [],
+  },
+  localUdpServerResponse: {
+    value: null,
+    rule: [],
+  },
   log: {
     select: {label: '关闭日志', value: 0},
     items: [
@@ -171,9 +280,15 @@ const onClickSubmit = async () => {
   refMyLoading.value.show()
   AppConfigUpdate({
     api_server: formData.value.apiServer.value,
-    local_server: !!formData.value.localWebServer.select,
-    local_server_port: formData.value.localWebServerPort.value,
-    local_server_path: formData.value.localWebServerPath.value,
+    local_web_server: !!formData.value.localWebServer.select,
+    local_web_server_port: formData.value.localWebServerPort.value,
+    local_web_server_path: formData.value.localWebServerPath.value,
+    local_tcp_server: !!formData.value.localTcpServer.select,
+    local_tcp_server_port: formData.value.localTcpServerPort.value,
+    local_tcp_server_response: formData.value.localTcpServerResponse.value,
+    local_udp_server: !!formData.value.localUdpServer.select,
+    local_udp_server_port: formData.value.localUdpServerPort.value,
+    local_udp_server_response: formData.value.localUdpServerResponse.value,
     log: !!formData.value.log.select,
   }).then(resp => {
     console.log('[AppConfigUpdate] resp ', resp)
@@ -199,12 +314,32 @@ const handleLocalUrl = (port) => {
   return ''
 }
 
+const handleLocalTcp = (port) => {
+  if (port) {
+    return `tcp://127.0.0.1:${port}`
+  }
+  return ''
+}
+
+const handleLocalUdp = (port) => {
+  if (port) {
+    return `udp://127.0.0.1:${port}`
+  }
+  return ''
+}
+
 const onMountedHandler = () => {
   const appConfig = getAppConfig()
   formData.value.apiServer.value = appConfig.api_server
-  formData.value.localWebServer.select = +appConfig.local_server
-  formData.value.localWebServerPort.value = +appConfig.local_server_port
-  formData.value.localWebServerPath.value = appConfig.local_server_path
+  formData.value.localWebServer.select = +appConfig.local_web_server
+  formData.value.localWebServerPort.value = +appConfig.local_web_server_port
+  formData.value.localWebServerPath.value = appConfig.local_web_server_path
+  formData.value.localTcpServer.select = +appConfig.local_tcp_server
+  formData.value.localTcpServerPort.value = +appConfig.local_tcp_server_port
+  formData.value.localTcpServerResponse.value = appConfig.local_tcp_server_response
+  formData.value.localUdpServer.select = +appConfig.local_udp_server
+  formData.value.localUdpServerPort.value = +appConfig.local_udp_server_port
+  formData.value.localUdpServerResponse.value = appConfig.local_udp_server_response
   formData.value.log.select = +appConfig.log
   formData.value.logPath.value = appConfig.log_path
 }
@@ -224,6 +359,8 @@ export default defineComponent({
       refMyLoading,
       copyToClipboard,
       handleLocalUrl,
+      handleLocalTcp,
+      handleLocalUdp,
     }
   }
 })
