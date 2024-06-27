@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-func FormatUrl(baseUrl, path string) string {
-	return fmt.Sprintf("%s/%s", strings.TrimRight(baseUrl, "/"), strings.TrimLeft(path, "/"))
+func FormatUrl(apiServer, path string) string {
+	return fmt.Sprintf("%s/%s", strings.TrimRight(apiServer, "/"), strings.TrimLeft(path, "/"))
 }
 
 func HttpJsonGet(requestUrl string, headers map[string]string) (buf []byte, err error) {

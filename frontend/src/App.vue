@@ -35,7 +35,7 @@ import Sidebar from "./components/Sidebar.vue";
 import {openUrl} from "./common/helper.js";
 import {EventsEmit, EventsOn} from "../wailsjs/runtime/runtime.js";
 import request from "./common/request.js";
-import {setSession} from "./common/vars.js"
+import {setAppConfig, setSession} from "./common/vars.js"
 
 let route = null
 let router = null
@@ -50,8 +50,9 @@ const onMountedHandler = () => {
 const onBeforeMountHandler = () => {
   EventsOn('onStartUpEvent', (data) => {
     console.log('[onStartUpEvent]', data)
-    request.config({baseURL: data.baseURL, jwtToken: data.jwtToken, clientId: data.clientId,})
-    setSession(data)
+    request.config({baseURL: data.apiServer, jwtToken: data.session.jwt_token, clientId: data.clientId,})
+    setSession(data.session)
+    setAppConfig(data.config)
 
     clientId.value = data.clientId
   })

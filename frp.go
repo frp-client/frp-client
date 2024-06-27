@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/frp-client/frp-client/model"
 	"github.com/frp-client/frp-client/utils"
@@ -74,7 +75,7 @@ func (a *App) FrpcStart() error {
 		Data model.FrpcConfig `json:"data"`
 	}{}
 	_, err := utils.HttpJsonGetUnmarshal(
-		utils.FormatUrl(baseURL, "/api/frpc/config"),
+		utils.FormatUrl(apiServer, "/api/frpc/config"),
 		a.apiRequestHeaders(),
 		&configResp,
 	)
@@ -97,7 +98,7 @@ func (a *App) FrpcStart() error {
 		} `json:"data"`
 	}{}
 	_, err = utils.HttpJsonGetUnmarshal(
-		utils.FormatUrl(baseURL, "/api/frpc/proxies"),
+		utils.FormatUrl(apiServer, "/api/frpc/proxies"),
 		a.apiRequestHeaders(),
 		&proxiesResp,
 	)
@@ -226,18 +227,21 @@ func (a *App) parseFrpcProxyConfig(respProxies *[]model.RespUserProxy) *[]v1.Pro
 	return &proxyCfgs
 }
 
-func (a *App) WebServer(port ...int) {
-	var p = 8080
-	if len(port) > 0 {
-		p = port[0]
-	}
+func (a *App) startWebServer() {
+	var p = a.appConfig.LocalServerPort
+
 	l, err := net.Listen(fiber.NetworkTCP4, fmt.Sprintf(":%d", p))
 	if err != nil {
+		log2.Println("[本地web服务端口被占用]", err.Error())
 		return
 	}
 	_ = l.Close()
 
 	app := fiber.New()
-	app.Static("/", "./", fiber.Static{Browse: true})
-	log.Fatal(app.Listen(fmt.Sprintf(":%d", p)))
+	app.Static("/", a.appConfig.LocalServerPath, fiber.Static{Browse: true})
+	err = app.Listen(fmt.Sprintf(":%d", p))
+	if err != nil {
+		log2.Println("[本地web服务启动失败]", err.Error())
+		return
+	}
 }

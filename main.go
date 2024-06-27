@@ -10,7 +10,10 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-const baseURL = "http://127.0.0.1:3000"
+const (
+	apiServer          = "https://tunnel-api.lixiang4u.xyz:3000"
+	localWebServerPort = 8090
+)
 
 func main() {
 	// Create an instance of the app structure

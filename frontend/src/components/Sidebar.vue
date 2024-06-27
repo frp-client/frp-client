@@ -34,7 +34,7 @@ const username = ref(null)
 
 const onBeforeMountHandler = () => {
   EventsOn('onStartUpEvent', (data) => {
-    username.value = data.username
+    username.value = data.session.username
   })
 }
 

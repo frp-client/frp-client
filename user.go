@@ -10,7 +10,11 @@ import (
 )
 
 func (a *App) getTempSessionFile() string {
-	return utils.AppTempFile(fmt.Sprintf("%s.session", utils.Md5(baseURL)[:6]))
+	return utils.AppTempFile(fmt.Sprintf("%s.session", utils.Md5(apiServer)[:6]))
+}
+
+func (a *App) getTempConfigFile() string {
+	return utils.AppTempFile(fmt.Sprintf("%s.config", utils.Md5(apiServer)[:6]))
 }
 
 // 检查用户session数据
@@ -61,7 +65,7 @@ func (a *App) apiClientLogin() (model.UserSession, error) {
 	if err != nil {
 		// 模拟注册登录
 		_, err = utils.HttpJsonPostUnmarshal(
-			utils.FormatUrl(baseURL, "/api/user/register"),
+			utils.FormatUrl(apiServer, "/api/user/register"),
 			utils.ToJsonByte(model.Map{
 				"username":  clientId,
 				"password":  utils.Sha256(fmt.Sprintf("%s,%s", clientId, clientId)),
@@ -78,7 +82,7 @@ func (a *App) apiClientLogin() (model.UserSession, error) {
 			return session, errors.New(fmt.Sprintf("服务器错误：%s", registerResp.Msg))
 		}
 		_, err = utils.HttpJsonPostUnmarshal(
-			utils.FormatUrl(baseURL, "/api/user/login"),
+			utils.FormatUrl(apiServer, "/api/user/login"),
 			utils.ToJsonByte(model.Map{
 				"username": clientId,
 				"password": utils.Sha256(fmt.Sprintf("%s,%s", clientId, clientId)),
@@ -105,7 +109,7 @@ func (a *App) apiClientLogin() (model.UserSession, error) {
 
 	// 登录成功检测
 	_, err = utils.HttpJsonGetUnmarshal(
-		utils.FormatUrl(baseURL, "/api/user/check"),
+		utils.FormatUrl(apiServer, "/api/user/check"),
 		a.apiRequestHeaders(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", session.JwtToken)}),
 		&checkResp,
 	)

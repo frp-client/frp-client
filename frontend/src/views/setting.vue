@@ -1,8 +1,15 @@
 <template>
   <div>
 
-    <v-form ref="formRef" class="form">
+    <div class="ml-2 mr-2">
+      <div class="ml-2 mr-2">
+        <v-alert text="配置修改后需要重启程序以生效" border="start" border-color="info"></v-alert>
+      </div>
+    </div>
+
+    <v-form ref="refForm" class="form ml-2 mr-2">
       <v-container>
+        <div class="ptb10"></div>
         <v-row>
           <v-col cols="12" md="12">
             <v-text-field
@@ -14,7 +21,7 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="3" md="3">
+          <v-col cols="2" md="2">
             <v-select
                 label="本地WEB服务"
                 v-model="formData.localWebServer.select"
@@ -25,7 +32,7 @@
                 variant="underlined"
             ></v-select>
           </v-col>
-          <v-col cols="3" md="3" v-if="formData.localWebServer.select">
+          <v-col cols="2" md="2" v-if="formData.localWebServer.select">
             <v-text-field
                 label="端口"
                 v-model="formData.localWebServerPort.value"
@@ -34,18 +41,30 @@
                 variant="underlined"
             ></v-text-field>
           </v-col>
-          <v-col cols="6" md="6" class="flex-items-center" v-if="formData.localWebServer.select">
+          <v-col cols="5" md="5" class="flex-items-center" v-if="formData.localWebServer.select">
+            <v-text-field
+                label="本地WEB目录"
+                placeholder="请复制粘贴本地WEB根目录地址"
+                v-model="formData.localWebServerPath.value"
+                :rules="formData.localWebServerPath.rule"
+                variant="underlined"
+            ></v-text-field>
+            <div class="ml-2"></div>
+            <v-icon
+                icon="content_copy"
+                class="pointer"
+                @click="copyToClipboard(formData.localWebServerPath.value)">
+            </v-icon>
+          </v-col>
+          <v-col cols="3" md="3" class="flex-items-center" v-if="formData.localWebServer.select">
             <text class="dashed-x pointer" @click="copyToClipboard(handleLocalUrl(formData.localWebServerPort.value))">
               {{ handleLocalUrl(formData.localWebServerPort.value) }}
             </text>
-            &nbsp;
-            <v-icon v-if="s" icon="circle" color="green"></v-icon>
-            <v-icon v-else icon="circle" color="red"></v-icon>
           </v-col>
         </v-row>
 
         <v-row>
-          <v-col cols="6" md="6">
+          <v-col cols="3" md="3">
             <v-select
                 label="日志"
                 v-model="formData.log.select"
@@ -55,6 +74,11 @@
                 item-value="value"
                 variant="underlined"
             ></v-select>
+          </v-col>
+          <v-col cols="9" md="9" class="flex-items-center" v-if="formData.log.select">
+            <text class="dashed-x pointer overflow-hidden" @click="copyToClipboard(formData.logPath.value)">
+              {{ formData.logPath.value }}
+            </text>
           </v-col>
         </v-row>
 
@@ -83,71 +107,35 @@
     </v-dialog>
 
     <MySnackbar ref="refMySnackbar"></MySnackbar>
+    <MyLoading ref="refMyLoading"></MyLoading>
 
   </div>
 </template>
 
 <script>
-import {defineComponent, getCurrentInstance, onMounted, ref} from "vue";
+import {defineComponent, onMounted, ref} from "vue";
 import clipboard from "../common/clipboard.js";
 import MySnackbar from "../components/MySnackbar.vue";
+import {getAppConfig} from "../common/vars.js";
+import {AppConfigUpdate} from "../../wailsjs/go/main/App.js";
+import MyLoading from "../components/MyLoading.vue";
 
-let inst = null
-
+const refForm = ref(false)
 const showTipsModal = ref(false)
 const refMySnackbar = ref(MySnackbar)
+const refMyLoading = ref(MyLoading)
 
-
-const formRef = ref(null)
 const formData = ref({
-  expandModel: [0],
-  proxyType: {
-    select: {label: 'http', value: 'http'},
-    items: [
-      {label: 'http', value: 'http'},
-      {label: 'https', value: 'https'},
-      {label: 'tcp', value: 'tcp'},
-      {label: 'udp', value: 'udp'},
-    ],
-    rule: [
-      value => {
-        if (!value) {
-          return '请选择代理类型';
-        }
-        return true;
-      },
-    ],
-
-  },
-  proxyName: {
-    value: '',
-    rule: [
-      value => {
-        if (!value || value.length < 2) {
-          return '请输入代理名称(不少于2位)';
-        }
-        return true;
-      },
-    ],
-  },
   apiServer: {
-    value: 'https://tunnel-api.lixiang4u.xyz:3000',
+    value: '',
     rule: [
       value => {
         return true;
       },
     ],
-  },
-  remotePort: {
-    value: '',
-    rule: [],
-  },
-  domain: {
-    value: '',
-    rule: [],
   },
   localWebServer: {
-    select: {label: '开启', value: 1},
+    select: {label: '关闭', value: 0},
     items: [
       {label: '开启', value: 1},
       {label: '关闭', value: 0},
@@ -155,40 +143,45 @@ const formData = ref({
     rule: [],
   },
   localWebServerPort: {
-    value: 8080,
+    value: null,
+    rule: [],
+  },
+  localWebServerPath: {
+    value: null,
     rule: [],
   },
   log: {
-    select: {label: '开启日志', value: 1},
+    select: {label: '关闭日志', value: 0},
     items: [
       {label: '开启日志', value: 1},
       {label: '关闭日志', value: 0},
     ],
     rule: [],
-
   },
-  sslCrt: {
-    value: '',
+  logPath: {
+    value: null,
     rule: [],
   },
-  sslKey: {
-    value: '',
-    rule: [],
-  }
 })
 
 const onClickSubmit = async () => {
   console.log('[onClickSubmit]', formData.value)
+  const {valid} = await refForm.value.validate()
 
-
-  console.log('[formRef1]', inst.$refs.formRef)
-
-  const {valid} = await inst.$refs.formRef.validate()
-
-  console.log('[valid]', valid)
-  if (valid) {
-    alert('Form is valid')
-  }
+  refMyLoading.value.show()
+  AppConfigUpdate({
+    api_server: formData.value.apiServer.value,
+    local_server: !!formData.value.localWebServer.select,
+    local_server_port: formData.value.localWebServerPort.value,
+    local_server_path: formData.value.localWebServerPath.value,
+    log: !!formData.value.log.select,
+  }).then(resp => {
+    console.log('[AppConfigUpdate] resp ', resp)
+  }).catch(err => {
+    refMySnackbar.value.show(err)
+  }).finally(() => {
+    refMyLoading.value.hide()
+  })
 
   // showTipsModal.value=true
 
@@ -200,23 +193,35 @@ const copyToClipboard = (url) => {
 }
 
 const handleLocalUrl = (port) => {
-  return `http://127.0.0.1:${port}`
+  if (port) {
+    return `http://127.0.0.1:${port}`
+  }
+  return ''
+}
+
+const onMountedHandler = () => {
+  const appConfig = getAppConfig()
+  formData.value.apiServer.value = appConfig.api_server
+  formData.value.localWebServer.select = +appConfig.local_server
+  formData.value.localWebServerPort.value = +appConfig.local_server_port
+  formData.value.localWebServerPath.value = appConfig.local_server_path
+  formData.value.log.select = +appConfig.log
+  formData.value.logPath.value = appConfig.log_path
 }
 
 export default defineComponent({
-  components: {MySnackbar},
+  components: {MyLoading, MySnackbar},
   setup() {
 
-    onMounted(() => {
-      inst = getCurrentInstance().ctx
-    })
+    onMounted(onMountedHandler)
 
     return {
-      formRef,
+      refForm,
       formData,
       onClickSubmit,
       showTipsModal,
       refMySnackbar,
+      refMyLoading,
       copyToClipboard,
       handleLocalUrl,
     }
@@ -227,6 +232,5 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .form {
-  padding: 20px 70px;
 }
 </style>
