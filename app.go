@@ -172,11 +172,10 @@ func (a *App) initApp() {
 		var logFile = filepath.Join(config.LogPath, fmt.Sprintf("frp-client-%s.log", time.Now().Format("200612")))
 		file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
-			log.Println("[OpenLogFileError]", err.Error())
+			log.Println("[日志文件打开失败]", logFile, err.Error())
 			return
 		}
 		log.SetOutput(file)
-		log.Println("[SetLogFile]")
 	} else {
 		log.SetOutput(io.Discard)
 	}

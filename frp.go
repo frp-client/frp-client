@@ -34,7 +34,7 @@ func (a *App) frpcStartService(cfg *v1.ClientCommonConfig, proxyCfgs []v1.ProxyC
 		defer log.Infof("frpc service for config file [%s] stopped", cfgFile)
 	}
 	if a.frpcSvc == nil {
-		log2.Println("[frpcSvcRun]")
+		log2.Println("[准备启动frpcSvc]")
 		var err error
 		a.frpcSvc, err = client.NewService(client.ServiceOptions{
 			Common:         cfg,
@@ -53,7 +53,7 @@ func (a *App) frpcStartService(cfg *v1.ClientCommonConfig, proxyCfgs []v1.ProxyC
 		}
 		return a.frpcSvc.Run(context.Background())
 	} else {
-		log2.Println("[frpcSvcUpdate]")
+		log2.Println("[准备重载frpcSvc]")
 		return a.frpcSvc.UpdateAllConfigurer(proxyCfgs, visitorCfgs)
 	}
 }
@@ -268,6 +268,7 @@ func (a *App) startTcpServer() error {
 			log2.Println("[本地tcp服务Read]", err.Error())
 			continue
 		}
+		log2.Println("[本地tcp服务Read]", accept.RemoteAddr().String(), string(buf))
 		_, err = accept.Write([]byte(a.appConfig.LocalTcpServerResponse))
 		if err != nil {
 			log2.Println("[本地tcp服务Write]", err.Error())
@@ -291,6 +292,7 @@ func (a *App) startUdpServer() error {
 			log2.Println("[本地udp服务Read]", err.Error())
 			continue
 		}
+		log2.Println("[本地udp服务Read]", addr.String(), string(buf))
 		_, err = ln.WriteToUDP([]byte(a.appConfig.LocalUdpServerResponse), addr)
 		if err != nil {
 			log2.Println("[本地udp服务Write]", err.Error())

@@ -16,7 +16,6 @@ func FormatUrl(apiServer, path string) string {
 
 func HttpJsonGet(requestUrl string, headers map[string]string) (buf []byte, err error) {
 	var client = http.Client{}
-	log.Println("[http.get.url]", requestUrl)
 	req, err := http.NewRequest("GET", requestUrl, nil)
 	if err != nil {
 		return
@@ -38,7 +37,6 @@ func HttpJsonGet(requestUrl string, headers map[string]string) (buf []byte, err 
 		return nil, fmt.Errorf("do http request error code: %d", resp.StatusCode)
 	}
 	buf, err = io.ReadAll(resp.Body)
-	log.Println("[http.post.resp]", string(buf))
 	if err != nil {
 		return
 	}

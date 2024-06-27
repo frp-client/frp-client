@@ -119,7 +119,6 @@ func (a *App) apiClientLogin() (model.UserSession, error) {
 	if checkResp.Code != 200 {
 		return session, errors.New(fmt.Sprintf("服务器错误：%s", checkResp.Msg))
 	}
-	log.Println("[checkResp]", utils.ToJsonString(checkResp))
 	// 以上为机器码注册用户
 
 	//utils.AesDecrypt
