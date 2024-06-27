@@ -12,9 +12,15 @@
     <p class="p-gray">通过将内网端口暴露到公网，实现从互联网访问内网资源</p>
     <p class="p-gray">请勿使用该软件从事违法用途</p>
 
-    <router-link @click="$router.push('/debug')" style="color: grey; font-size: 12px;" to="">
-      打开调试
-    </router-link>
+    <p>
+      <router-link class="ml-1 mr-1" @click="$router.push('/debug')" style="color: grey; font-size: 12px;" to="">
+        调试页面
+      </router-link>
+      <router-link class="ml-1 mr-1" @click="$router.push('/log')" style="color: grey; font-size: 12px;" to="">
+        日志页面
+      </router-link>
+
+    </p>
   </div>
 </template>
 

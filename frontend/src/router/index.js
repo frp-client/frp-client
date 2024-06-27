@@ -36,6 +36,11 @@ const routes = [
         name: 'debug',
         component: () => import('../views/debug.vue')
     },
+    {
+        path: '/log',
+        name: 'log',
+        component: () => import('../views/log.vue')
+    },
 ]
 
 export default createRouter({

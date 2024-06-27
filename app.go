@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
@@ -296,4 +297,69 @@ func (a *App) AppConfigUpdate(appConfig model.AppConfig) error {
 	a.appConfig = &config
 
 	return nil
+}
+
+func (a *App) AppLogs(startLine int) model.Map {
+	var logFile = filepath.Join(a.appConfig.LogPath, fmt.Sprintf("frp-client-%s.log", time.Now().Format("200612")))
+	file, err := os.Open(logFile)
+	if err != nil {
+		log.Println("[日志文件打开失败]", logFile, err.Error())
+		return nil
+	}
+	defer func() { _ = file.Close() }()
+
+	var lastXLine = 200
+	//var lines []string
+	if startLine <= 0 {
+		// 获取文件总行数，并返回最后100行
+		var totalScanner = bufio.NewScanner(file)
+		var totalLine = 0
+		for totalScanner.Scan() {
+			totalLine++
+		}
+		if err := totalScanner.Err(); err != nil {
+			return nil
+		}
+		if totalLine >= lastXLine*2 {
+			startLine = totalLine - lastXLine
+		} else {
+			startLine = 0
+		}
+	}
+
+	var readFromLine = func(filePath string, lineNum int) (lastLine int, lines []string, err error) {
+		file, err := os.Open(filePath)
+		if err != nil {
+			return 0, nil, err
+		}
+		defer func() { _ = file.Close() }()
+
+		scanner := bufio.NewScanner(file)
+
+		var maxScanLine = 50
+		for scanner.Scan() {
+			lastLine++
+			if lastLine > lineNum {
+				lines = append(lines, scanner.Text())
+			}
+			if lastLine > lineNum+maxScanLine {
+				break
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			return 0, nil, err
+		}
+		return
+	}
+
+	lastLine, lines, err := readFromLine(logFile, startLine)
+	if err != nil {
+		return nil
+	}
+
+	return model.Map{
+		"start_line": startLine,
+		"last_line":  lastLine,
+		"logs":       lines,
+	}
 }

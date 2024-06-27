@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -268,7 +269,7 @@ func (a *App) startTcpServer() error {
 			log2.Println("[本地tcp服务Read]", err.Error())
 			continue
 		}
-		log2.Println("[本地tcp服务Read]", accept.RemoteAddr().String(), string(buf))
+		log2.Println("[本地tcp服务Read]", accept.RemoteAddr().String(), bytes.TrimSpace(buf))
 		_, err = accept.Write([]byte(a.appConfig.LocalTcpServerResponse))
 		if err != nil {
 			log2.Println("[本地tcp服务Write]", err.Error())
@@ -292,7 +293,7 @@ func (a *App) startUdpServer() error {
 			log2.Println("[本地udp服务Read]", err.Error())
 			continue
 		}
-		log2.Println("[本地udp服务Read]", addr.String(), string(buf))
+		log2.Println("[本地udp服务Read]", addr.String(), bytes.TrimSpace(buf))
 		_, err = ln.WriteToUDP([]byte(a.appConfig.LocalUdpServerResponse), addr)
 		if err != nil {
 			log2.Println("[本地udp服务Write]", err.Error())
