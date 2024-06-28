@@ -34,7 +34,10 @@
 
         <v-row>
           <v-col cols="12" md="12" class="d-flex justify-end">
-            <v-btn color="rgb(24, 103, 192)" @click="onClickSubmit">登 录</v-btn>
+            <v-btn color="rgb(24, 103, 192)" @click="onClickSubmit">
+              <text v-if="formData.username.value">登录其他账号</text>
+              <text v-else>登 录</text>
+            </v-btn>
           </v-col>
         </v-row>
 

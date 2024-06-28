@@ -401,7 +401,7 @@ const onClickSubmit = async () => {
     local_ss_password: formData.value.localSsPassword.value,
     log: !!formData.value.log.select,
   }).then(resp => {
-    console.log('[AppConfigUpdate] resp ', resp)
+    refMySnackbar.value.show('保存完成')
   }).catch(err => {
     refMySnackbar.value.show(err)
   }).finally(() => {
