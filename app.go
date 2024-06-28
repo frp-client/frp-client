@@ -147,9 +147,15 @@ func (a *App) initAppConfig() (model.AppConfig, error) {
 			LocalUdpServer:         true,
 			LocalUdpServerPort:     16666,
 			LocalUdpServerResponse: "udp ok",
-			Log:                    true,
-			LogPath:                utils.AppPath(),
-			UpdatedAt:              utils.UnixTimestamp(),
+
+			LocalSsServer:   true,
+			LocalSsPort:     26666,
+			LocalSsCipher:   "AES-256-GCM",
+			LocalSsPassword: a.ClientId()[:6],
+
+			Log:       true,
+			LogPath:   utils.AppPath(),
+			UpdatedAt: utils.UnixTimestamp(),
 		}
 
 		//utils.AesDecrypt
@@ -195,6 +201,9 @@ func (a *App) initApp() {
 	if config.LocalUdpServer == true {
 		go func() { _ = a.startUdpServer() }()
 	}
+	if config.LocalSsServer == true {
+		go func() { _ = a.startSsServer() }()
+	}
 
 	// 准备初始化并启动frpc
 	session, err := a.apiClientLogin()
@@ -227,6 +236,11 @@ func (a *App) AppConfigUpdate(appConfig model.AppConfig) error {
 	if appConfig.LocalUdpServer {
 		if appConfig.LocalUdpServerPort <= 0 || appConfig.LocalUdpServerPort >= 65535 {
 			return errors.New("UDP端口配置不合法")
+		}
+	}
+	if appConfig.LocalSsServer {
+		if appConfig.LocalSsPort <= 0 || appConfig.LocalSsPort >= 65535 {
+			return errors.New("SSServer端口配置不合法")
 		}
 	}
 

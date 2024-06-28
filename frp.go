@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/frp-client/frp-client/handler/ss"
 	"github.com/frp-client/frp-client/model"
 	"github.com/frp-client/frp-client/utils"
 	"github.com/frp-client/frp/client"
@@ -15,11 +16,14 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"slices"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/labstack/gommon/log"
+	"github.com/shadowsocks/go-shadowsocks2/core"
+	"github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
 
 func (a *App) frpcGracefulClose(svr *client.Service) {
@@ -336,4 +340,50 @@ func (a *App) startUdpServer() error {
 			continue
 		}
 	}
+}
+
+func (a *App) startSsServer() error {
+
+	log2.Println("[a.appConfig.LocalSsCipher]", a.appConfig.LocalSsCipher)
+	log2.Println("[a.appConfig.LocalSsPort]", a.appConfig.LocalSsPort)
+	log2.Println("[a.appConfig.LocalSsPassword]", a.appConfig.LocalSsPassword)
+
+	if slices.Contains([]string{"DUMMY", "AES-128-GCM", "AES-256-GCM", "CHACHA20-IETF-POLY1305"}, strings.ToUpper(a.appConfig.LocalSsCipher)) {
+		// # 只支持：DUMMY/AES-128-GCM/AES-256-GCM/CHACHA20-IETF-POLY1305，因为使用了github.com/shadowsocks/go-shadowsocks2库
+		a._runSsServer()
+	} else {
+		ss.RunSsServer(shadowsocks.Config{
+			LocalPort: a.appConfig.LocalSsPort,
+			Password:  a.appConfig.LocalSsPassword,
+			Method:    a.appConfig.LocalSsCipher,
+		})
+	}
+
+	return nil
+}
+
+func (a *App) _runSsServer() {
+	// 启动ss-server
+	var key []byte
+	var addr = fmt.Sprintf(":%d", a.appConfig.LocalSsPort)
+	var cipher = strings.ToUpper(a.appConfig.LocalSsCipher)
+	var password = a.appConfig.LocalSsPassword
+
+	udpAddr := addr
+
+	ciph, err := core.PickCipher(cipher, key, password)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	if false {
+		go ss.UdpRemoteConn(udpAddr, ciph.PacketConn)
+	}
+	if true {
+		go ss.TcpRemoteConn(addr, ciph.StreamConn)
+	}
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	<-sigCh
 }

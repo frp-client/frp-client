@@ -10,11 +10,14 @@ require (
 	github.com/frp-client/frp v0.0.0-20240617081446-1b311e7adae9
 	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/labstack/gommon v0.4.0
+	github.com/shadowsocks/go-shadowsocks2 v0.1.5
+	github.com/shadowsocks/shadowsocks-go v0.0.0-20200409064450-3e585ff90601
 	github.com/wailsapp/wails/v2 v2.8.2
 )
 
 require (
 	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
+	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
@@ -54,6 +57,7 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/quic-go v0.42.0 // indirect
+	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/samber/lo v1.39.0 // indirect
 	github.com/spf13/cobra v1.8.0 // indirect
