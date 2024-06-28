@@ -279,9 +279,9 @@ func (a *App) startWebServer() error {
 	}
 	_ = l.Close()
 
-	app := fiber.New()
-	app.Static("/", a.appConfig.LocalWebServerPath, fiber.Static{Browse: true})
-	err = app.Listen(fmt.Sprintf(":%d", p))
+	a.svc.webServer = fiber.New()
+	a.svc.webServer.Static("/", a.appConfig.LocalWebServerPath, fiber.Static{Browse: true})
+	err = a.svc.webServer.Listen(fmt.Sprintf(":%d", p))
 	if err != nil {
 		log2.Println("[本地web服务启动失败]", err.Error())
 		return err
@@ -381,4 +381,15 @@ func (a *App) _runSsServer() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	<-sigCh
+}
+
+func (a *App) RpcStopWebServer() error {
+	if a.svc.webServer == nil {
+		return nil
+	}
+	return a.svc.webServer.Shutdown()
+}
+
+func (a *App) RpcStartWebServer() error {
+	return a.startWebServer()
 }

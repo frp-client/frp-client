@@ -11,6 +11,7 @@ import (
 	"github.com/frp-client/frp-client/utils"
 	"github.com/frp-client/frp/client"
 	v1 "github.com/frp-client/frp/pkg/config/v1"
+	"github.com/gofiber/fiber/v2"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"log"
@@ -29,6 +30,9 @@ type App struct {
 	appConfig       *model.AppConfig
 	frpcProxyCfgs   *[]v1.ProxyConfigurer
 	frpcSvc         *client.Service
+	svc             struct {
+		webServer *fiber.App
+	}
 }
 
 // NewApp creates a new App application struct
@@ -76,7 +80,7 @@ func (a *App) InstanceCheck() bool {
 		a.WindowMessage("程序已启动或端口被占用", "错误", runtime.ErrorDialog)
 		a.Quit()
 	}
-	_, _ = ln.Accept()
+	go func() { _, _ = ln.Accept() }()
 	return true
 }
 
