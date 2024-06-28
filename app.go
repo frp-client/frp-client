@@ -199,31 +199,8 @@ func (a *App) initApp() {
 	}
 	a.appConfig = &config
 
-	if config.Log == true {
-		var logFile = filepath.Join(config.LogPath, fmt.Sprintf("frp-client-%s.log", time.Now().Format("200612")))
-		file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-		if err != nil {
-			log.Println("[日志文件打开失败]", logFile, err.Error())
-			return
-		}
-		log.SetOutput(file)
-	} else {
-		log.SetOutput(io.Discard)
-	}
-
 	// 是否启动本地web服务
-	if config.LocalWebServer == true {
-		go func() { _ = a.startWebServer() }()
-	}
-	if config.LocalTcpServer == true {
-		go func() { _ = a.startTcpServer() }()
-	}
-	if config.LocalUdpServer == true {
-		go func() { _ = a.startUdpServer() }()
-	}
-	if config.LocalSsServer == true {
-		go func() { _ = a.startSsServer() }()
-	}
+	a.reloadSettingConfig()
 
 	// 准备初始化并启动frpc
 	session, err := a.apiClientLogin()
@@ -348,8 +325,48 @@ func (a *App) AppConfigUpdate(appConfig model.AppConfig) error {
 	}
 
 	a.appConfig = &config
+	a.reloadSettingConfig()
 
 	return nil
+}
+
+func (a *App) reloadSettingConfig() {
+	// 是否启动本地web服务
+	if a.appConfig.LocalWebServer == true {
+		go func() { _ = a.RpcStartWebServer() }()
+	} else {
+		go func() { _ = a.RpcStopWebServer() }()
+	}
+	if a.appConfig.LocalTcpServer == true {
+		go func() { _ = a.RpcStartTcpServer() }()
+	} else {
+		go func() { _ = a.RpcStopTcpServer() }()
+	}
+	if a.appConfig.LocalUdpServer == true {
+		go func() { _ = a.RpcStartUdpServer() }()
+	} else {
+		go func() { _ = a.RpcStopUdpServer() }()
+	}
+	if a.appConfig.LocalSsServer == true {
+		go func() { _ = a.RpcStartSsServer() }()
+	} else {
+		go func() { _ = a.RpcStopSsServer() }()
+	}
+	a.setupLog()
+}
+
+func (a *App) setupLog() {
+	if a.appConfig.Log == true {
+		var logFile = filepath.Join(a.appConfig.LogPath, fmt.Sprintf("frp-client-%s.log", time.Now().Format("200612")))
+		file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		if err == nil {
+			log.SetOutput(file)
+		} else {
+			log.Println("[日志文件打开失败]", logFile, err.Error())
+		}
+	} else {
+		log.SetOutput(io.Discard)
+	}
 }
 
 func (a *App) AppConfig() model.AppConfig {

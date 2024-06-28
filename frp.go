@@ -365,6 +365,8 @@ func (a *App) startSsServer() error {
 		}
 	}
 
+	ss.TcpOpen()
+
 	return nil
 }
 
@@ -406,14 +408,14 @@ func (a *App) RpcStartWebServer() error {
 }
 
 func (a *App) RpcStopTcpServer() error {
-	if (*a.svc.tcpServer) != nil {
+	if a.svc.tcpServer != nil {
 		return (*a.svc.tcpServer).Close()
 	}
 	return nil
 }
 
 func (a *App) RpcStartTcpServer() error {
-	if (*a.svc.tcpServer) != nil {
+	if a.svc.tcpServer != nil {
 		_ = (*a.svc.tcpServer).Close()
 	}
 	return a.startTcpServer()
@@ -432,15 +434,11 @@ func (a *App) RpcStartUdpServer() error {
 }
 
 func (a *App) RpcStopSsServer() error {
-	if (*a.svc.ssTcpServer) != nil {
-		return (*a.svc.ssTcpServer).Close()
-	}
+	ss.TcpClose()
 	return nil
 }
 
 func (a *App) RpcStartSsServer() error {
-	if (*a.svc.ssTcpServer) != nil {
-		_ = (*a.svc.ssTcpServer).Close()
-	}
+	ss.TcpClose()
 	return a.startSsServer()
 }
