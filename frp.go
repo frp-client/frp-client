@@ -296,6 +296,8 @@ func (a *App) startTcpServer() error {
 		log2.Println("[本地tcp服务端口被占用]", err.Error())
 		return err
 	}
+	a.svc.tcpServer = &ln
+
 	var buf []byte
 	for {
 		accept, err := ln.Accept()
@@ -325,16 +327,18 @@ func (a *App) startUdpServer() error {
 		log2.Println("[本地tcp服务启动失败]", err.Error())
 		return err
 	}
+	a.svc.udpServer = ln
+
 	var buf []byte
 	for {
 		buf = make([]byte, 1024)
-		_, addr, err := ln.ReadFromUDP(buf)
+		_, addr, err := a.svc.udpServer.ReadFromUDP(buf)
 		if err != nil {
 			log2.Println("[本地udp服务Read]", err.Error())
 			continue
 		}
 		log2.Println("[本地udp服务Read]", addr.String(), bytes.TrimSpace(buf))
-		_, err = ln.WriteToUDP([]byte(a.appConfig.LocalUdpServerResponse), addr)
+		_, err = a.svc.udpServer.WriteToUDP([]byte(a.appConfig.LocalUdpServerResponse), addr)
 		if err != nil {
 			log2.Println("[本地udp服务Write]", err.Error())
 			continue
@@ -343,21 +347,28 @@ func (a *App) startUdpServer() error {
 }
 
 func (a *App) startSsServer() error {
+	var err error
 	if slices.Contains([]string{"DUMMY", "AES-128-GCM", "AES-256-GCM", "CHACHA20-IETF-POLY1305"}, strings.ToUpper(a.appConfig.LocalSsCipher)) {
 		// # 只支持：DUMMY/AES-128-GCM/AES-256-GCM/CHACHA20-IETF-POLY1305，因为使用了github.com/shadowsocks/go-shadowsocks2库
-		a._runSsServer()
+		a.svc.ssTcpServer, err = a._runSsServer()
+		if err != nil {
+			return err
+		}
 	} else {
-		ss.RunSsServer(shadowsocks.Config{
+		a.svc.ssTcpServer, err = ss.RunSsServer(shadowsocks.Config{
 			LocalPort: a.appConfig.LocalSsPort,
 			Password:  a.appConfig.LocalSsPassword,
 			Method:    a.appConfig.LocalSsCipher,
 		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (a *App) _runSsServer() {
+func (a *App) _runSsServer() (ssTcpListener *net.Listener, err error) {
 	// 启动ss-server
 	var key []byte
 	var addr = fmt.Sprintf(":%d", a.appConfig.LocalSsPort)
@@ -368,28 +379,68 @@ func (a *App) _runSsServer() {
 
 	ciph, err := core.PickCipher(cipher, key, password)
 	if err != nil {
-		os.Exit(1)
+		return nil, err
 	}
 
 	if false {
 		go ss.UdpRemoteConn(udpAddr, ciph.PacketConn)
 	}
 	if true {
-		go ss.TcpRemoteConn(addr, ciph.StreamConn)
+		ssTcpListener = ss.TcpRemoteConn(addr, ciph.StreamConn)
 	}
-
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	<-sigCh
+	return ssTcpListener, nil
 }
 
 func (a *App) RpcStopWebServer() error {
-	if a.svc.webServer == nil {
-		return nil
+	if a.svc.webServer != nil {
+		return a.svc.webServer.Shutdown()
 	}
-	return a.svc.webServer.Shutdown()
+	return nil
 }
 
 func (a *App) RpcStartWebServer() error {
+	if a.svc.webServer != nil {
+		_ = a.svc.webServer.Shutdown()
+	}
 	return a.startWebServer()
+}
+
+func (a *App) RpcStopTcpServer() error {
+	if (*a.svc.tcpServer) != nil {
+		return (*a.svc.tcpServer).Close()
+	}
+	return nil
+}
+
+func (a *App) RpcStartTcpServer() error {
+	if (*a.svc.tcpServer) != nil {
+		_ = (*a.svc.tcpServer).Close()
+	}
+	return a.startTcpServer()
+}
+
+func (a *App) RpcStopUdpServer() error {
+	if a.svc.udpServer != nil {
+		return a.svc.udpServer.Close()
+	}
+	return nil
+}
+
+func (a *App) RpcStartUdpServer() error {
+	_ = a.svc.udpServer.Close()
+	return a.startUdpServer()
+}
+
+func (a *App) RpcStopSsServer() error {
+	if (*a.svc.ssTcpServer) != nil {
+		return (*a.svc.ssTcpServer).Close()
+	}
+	return nil
+}
+
+func (a *App) RpcStartSsServer() error {
+	if (*a.svc.ssTcpServer) != nil {
+		_ = (*a.svc.ssTcpServer).Close()
+	}
+	return a.startSsServer()
 }

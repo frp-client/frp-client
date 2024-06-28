@@ -10,7 +10,6 @@ import (
 	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 	"io"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -296,40 +295,49 @@ var passwdManager = PasswdManager{
 	trafficStats: map[string]int64{},
 }
 
-func RunSsServer(config ss.Config) {
+func RunSsServer(config ss.Config) (ssTcpListener *net.Listener, err error) {
 	ssConfig = &config
 	ssConfig.Method = strings.ToLower(ssConfig.Method)
-	run(strconv.Itoa(config.LocalPort), config.Password)
+	ssTcpListener, err = run(strconv.Itoa(config.LocalPort), config.Password)
+
+	return
 }
 
-func run(port, password string) {
+func run(port, password string) (ssTcpListener *net.Listener, err error) {
 	ln, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Printf("error listening port %v: %v\n", port, err)
-		os.Exit(1)
+		return nil, err
 	}
+
+	ssTcpListener = &ln
+
 	passwdManager.add(port, password, ln)
 	var cipher *ss.Cipher
 	log.Printf("server listening port %v ...\n", port)
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			// listener maybe closed to update password
-			debug.Printf("accept error: %v\n", err)
-			return
-		}
-		// Creating cipher upon first connection.
-		if cipher == nil {
-			log.Println("creating cipher for port:", port)
-			cipher, err = ss.NewCipher(ssConfig.Method, password)
+	go func() {
+		for {
+			conn, err := ln.Accept()
 			if err != nil {
-				log.Printf("Error generating cipher for port: %s %v\n", port, err)
-				conn.Close()
-				continue
+				// listener maybe closed to update password
+				debug.Printf("accept error: %v\n", err)
+				return
 			}
+			// Creating cipher upon first connection.
+			if cipher == nil {
+				log.Println("creating cipher for port:", port)
+				cipher, err = ss.NewCipher(ssConfig.Method, password)
+				if err != nil {
+					log.Printf("Error generating cipher for port: %s %v\n", port, err)
+					conn.Close()
+					continue
+				}
+			}
+			go handleConnection(ss.NewConn(conn, cipher.Copy()), port)
 		}
-		go handleConnection(ss.NewConn(conn, cipher.Copy()), port)
-	}
+	}()
+
+	return ssTcpListener, nil
 }
 
 func runUDP(port, password string) {

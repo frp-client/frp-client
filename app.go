@@ -31,7 +31,11 @@ type App struct {
 	frpcProxyCfgs   *[]v1.ProxyConfigurer
 	frpcSvc         *client.Service
 	svc             struct {
-		webServer *fiber.App
+		webServer   *fiber.App
+		tcpServer   *net.Listener
+		udpServer   *net.UDPConn
+		ssTcpServer *net.Listener
+		ssUdpServer *net.PacketConn
 	}
 }
 
