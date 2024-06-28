@@ -88,7 +88,7 @@ func tcpLocal(addr, server string, shadow func(net.Conn) net.Conn, getAddr func(
 
 			//log.Println(fmt.Sprintf("proxy %s <-> %s <-> %s", c.RemoteAddr(), server, tgt))
 			if err = relay(rc, c); err != nil {
-				log.Println(fmt.Sprintf("relay error: %v", err))
+				//log.Println(fmt.Sprintf("relay error: %v", err))
 			}
 		}()
 	}
@@ -108,44 +108,55 @@ func tcpRemote(addr string, shadow func(net.Conn) net.Conn) *net.Listener {
 
 	log.Println(fmt.Sprintf("[ss] listening TCP on %s", addr))
 	go func() {
+		var _break = false
 		for {
-			c, err := l.Accept()
-			if err != nil {
-				//log.Println(fmt.Sprintf("failed to accept: %v", err))
-				continue
-			}
-
-			go func() {
-				defer c.Close()
-				//if config.TCPCork {
-				//	c = timedCork(c, 10*time.Millisecond, 1280)
-				//}
-				sc := shadow(c)
-
-				tgt, err := socks.ReadAddr(sc)
+			select {
+			case <-ssTcpClose:
+				_ = l.Close()
+				_break = true
+				break
+			default:
+				c, err := l.Accept()
 				if err != nil {
-					//log.Println(fmt.Sprintf("failed to get target address from %v: %v", c.RemoteAddr(), err))
-					// drain c to avoid leaking server behavioral features
-					// see https://www.ndss-symposium.org/ndss-paper/detecting-probe-resistant-proxies/
-					_, err = io.Copy(ioutil.Discard, c)
+					//log.Println(fmt.Sprintf("failed to accept: %v", err))
+					continue
+				}
+
+				go func() {
+					defer c.Close()
+					//if config.TCPCork {
+					//	c = timedCork(c, 10*time.Millisecond, 1280)
+					//}
+					sc := shadow(c)
+
+					tgt, err := socks.ReadAddr(sc)
 					if err != nil {
-						log.Println(fmt.Sprintf("discard error: %v", err))
+						//log.Println(fmt.Sprintf("failed to get target address from %v: %v", c.RemoteAddr(), err))
+						// drain c to avoid leaking server behavioral features
+						// see https://www.ndss-symposium.org/ndss-paper/detecting-probe-resistant-proxies/
+						_, err = io.Copy(ioutil.Discard, c)
+						if err != nil {
+							log.Println(fmt.Sprintf("discard error: %v", err))
+						}
+						return
 					}
-					return
-				}
 
-				rc, err := net.Dial("tcp", tgt.String())
-				if err != nil {
-					//log.Println(fmt.Sprintf("failed to connect to target: %v", err))
-					return
-				}
-				defer rc.Close()
+					rc, err := net.Dial("tcp", tgt.String())
+					if err != nil {
+						//log.Println(fmt.Sprintf("failed to connect to target: %v", err))
+						return
+					}
+					defer rc.Close()
 
-				//log.Println(fmt.Sprintf("proxy %s <-> %s", c.RemoteAddr(), tgt))
-				if err = relay(sc, rc); err != nil {
-					log.Println(fmt.Sprintf("relay error: %v", err))
-				}
-			}()
+					//log.Println(fmt.Sprintf("proxy %s <-> %s", c.RemoteAddr(), tgt))
+					if err = relay(sc, rc); err != nil {
+						//log.Println(fmt.Sprintf("relay error: %v", err))
+					}
+				}()
+			}
+			if _break {
+				break
+			}
 		}
 	}()
 

@@ -316,24 +316,35 @@ func run(port, password string) (ssTcpListener *net.Listener, err error) {
 	var cipher *ss.Cipher
 	log.Printf("server listening port %v ...\n", port)
 	go func() {
+		var _break = false
 		for {
-			conn, err := ln.Accept()
-			if err != nil {
-				// listener maybe closed to update password
-				debug.Printf("accept error: %v\n", err)
-				return
-			}
-			// Creating cipher upon first connection.
-			if cipher == nil {
-				log.Println("creating cipher for port:", port)
-				cipher, err = ss.NewCipher(ssConfig.Method, password)
+			select {
+			case <-ssTcpClose:
+				_break = true
+				_ = ln.Close()
+				break
+			default:
+				conn, err := ln.Accept()
 				if err != nil {
-					log.Printf("Error generating cipher for port: %s %v\n", port, err)
-					conn.Close()
-					continue
+					// listener maybe closed to update password
+					debug.Printf("accept error: %v\n", err)
+					return
 				}
+				// Creating cipher upon first connection.
+				if cipher == nil {
+					//log.Println("creating cipher for port:", port)
+					cipher, err = ss.NewCipher(ssConfig.Method, password)
+					if err != nil {
+						log.Printf("Error generating cipher for port: %s %v\n", port, err)
+						conn.Close()
+						continue
+					}
+				}
+				go handleConnection(ss.NewConn(conn, cipher.Copy()), port)
 			}
-			go handleConnection(ss.NewConn(conn, cipher.Copy()), port)
+			if _break {
+				break
+			}
 		}
 	}()
 
