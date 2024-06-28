@@ -142,20 +142,18 @@ func (a *App) initAppConfig() (model.AppConfig, error) {
 			LocalWebServerPort:     localWebServerPort,
 			LocalWebServerPath:     utils.AppPath(),
 			LocalTcpServer:         false,
-			LocalTcpServerPort:     16666,
+			LocalTcpServerPort:     localTcpServerPort,
 			LocalTcpServerResponse: "tcp ok",
 			LocalUdpServer:         false,
-			LocalUdpServerPort:     16666,
+			LocalUdpServerPort:     localUdpServerPort,
 			LocalUdpServerResponse: "udp ok",
-
-			LocalSsServer:   false,
-			LocalSsPort:     26666,
-			LocalSsCipher:   "AES-256-GCM",
-			LocalSsPassword: a.ClientId()[:8],
-
-			Log:       true,
-			LogPath:   utils.AppPath(),
-			UpdatedAt: utils.UnixTimestamp(),
+			LocalSsServer:          false,
+			LocalSsPort:            localSsServerPort,
+			LocalSsCipher:          "AES-256-GCM",
+			LocalSsPassword:        a.ClientId()[:8],
+			Log:                    false,
+			LogPath:                utils.AppPath(),
+			UpdatedAt:              utils.UnixTimestamp(),
 		}
 
 		//utils.AesDecrypt

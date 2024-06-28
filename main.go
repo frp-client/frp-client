@@ -13,6 +13,9 @@ var assets embed.FS
 const (
 	apiServer          = "https://tunnel-api.lixiang4u.xyz:3000"
 	localWebServerPort = 8090
+	localTcpServerPort = 16666
+	localUdpServerPort = 16666
+	localSsServerPort  = 26666
 )
 
 func main() {
