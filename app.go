@@ -14,6 +14,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"log"
+	"net"
 	"os"
 	"path"
 	"path/filepath"
@@ -40,6 +41,8 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 
+	a.InstanceCheck()
+
 	runtime.EventsOn(ctx, "onAppMounted", a.onAppMounted)
 	// 注册事件，并启动frpc
 	//runtime.EventsOn(ctx, "onFrpcNewConfig", a.OnFrpcNewConfig)
@@ -64,6 +67,17 @@ func (a *App) systemTray() {
 	})
 
 	systray.SetOnRClick(func(menu systray.IMenu) { _ = menu.ShowMenu() })
+}
+
+func (a *App) InstanceCheck() bool {
+	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", appInstanceCheckPort))
+	if err != nil {
+		log.Println("[程序已启动或端口被占用]", err.Error())
+		a.WindowMessage("程序已启动或端口被占用", "错误", runtime.ErrorDialog)
+		a.Quit()
+	}
+	_, _ = ln.Accept()
+	return true
 }
 
 // Greet returns a greeting for the given name
@@ -209,13 +223,13 @@ func (a *App) initApp() {
 		log.Println("[客户端登陆失败]", err.Error())
 		//runtime.Quit(ctx)
 		a.WindowMessage(fmt.Sprintf("客户端授权失败：%s", err.Error()), "提示")
-		return
+		a.Quit()
 	}
 	a.frpcUserSession = &session
 	err = a.FrpcStart()
 	if err != nil {
 		a.WindowMessage(fmt.Sprintf("客户端启动失败：%s", err.Error()), "提示")
-		return
+		a.Quit()
 	}
 
 }
@@ -355,7 +369,7 @@ func (a *App) AppLogs(startLine int) model.Map {
 	}
 	defer func() { _ = file.Close() }()
 
-	var lastXLine = 200
+	var lastXLine = 100
 	//var lines []string
 	if startLine <= 0 {
 		// 获取文件总行数，并返回最后100行

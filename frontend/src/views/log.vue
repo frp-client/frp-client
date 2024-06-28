@@ -49,14 +49,12 @@ const getAppLogs = () => {
     console.log('[AppLogs.resp]', resp)
     if (!resp.logs || resp.logs.length === 0) {
       console.log('[clearInterval]', timer.value)
-      clearInterval(timer.value)
       return
     }
 
     respLogs.value.start_line = resp.last_line
     respLogs.value.last_line = resp.last_line
     respLogs.value.logs = respLogs.value.logs.concat(...resp.logs)
-
 
     // console.log('[refLogList]', refLogList.value)
     // console.log('[refLogList2]', refLogList.value.height)
@@ -81,7 +79,7 @@ const onMountedHandler = () => {
 
   timer.value = setInterval(() => {
     getAppLogs()
-  }, 5000)
+  }, 3000)
 
 }
 
