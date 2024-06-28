@@ -10,6 +10,10 @@
     <v-form ref="refForm" class="form ml-2 mr-2">
       <v-container>
         <div class="ptb10"></div>
+
+        <v-row>
+          <v-col cols="12" md="12"><b>Api服务器</b></v-col>
+        </v-row>
         <v-row>
           <v-col cols="12" md="12">
             <v-text-field
@@ -19,6 +23,10 @@
                 variant="underlined"
             ></v-text-field>
           </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="12" md="12"><b>本地Web服务</b></v-col>
         </v-row>
         <v-row>
           <v-col cols="2" md="2">
@@ -64,6 +72,9 @@
         </v-row>
 
         <v-row>
+          <v-col cols="12" md="12"><b>本地Tcp服务</b></v-col>
+        </v-row>
+        <v-row>
           <v-col cols="2" md="2">
             <v-select
                 label="本地TCP服务"
@@ -102,6 +113,9 @@
         </v-row>
 
         <v-row>
+          <v-col cols="12" md="12"><b>本地Udp服务</b></v-col>
+        </v-row>
+        <v-row>
           <v-col cols="2" md="2">
             <v-select
                 label="本地UDP服务"
@@ -139,7 +153,55 @@
           </v-col>
         </v-row>
 
+        <v-row>
+          <v-col cols="12" md="12"><b>本地Shodowsocks服务</b></v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="3" md="3">
+            <v-select
+                label="本地shadowsocks服务"
+                v-model="formData.localSsServer.select"
+                :items="formData.localSsServer.items"
+                :rules="formData.localSsServer.rule"
+                item-title="label"
+                item-value="value"
+                variant="underlined"
+            ></v-select>
+          </v-col>
+          <v-col cols="4" md="4" class="flex-items-center" v-if="formData.localSsServer.select">
+            <v-select
+                label="加密方式"
+                v-model="formData.localSsCipher.select"
+                :items="formData.localSsCipher.items"
+                :rules="formData.localSsCipher.rule"
+                item-title="label"
+                item-value="value"
+                variant="underlined"
+            ></v-select>
+          </v-col>
+          <v-col cols="2" md="2" v-if="formData.localSsServer.select">
+            <v-text-field
+                label="端口"
+                v-model="formData.localSsPort.value"
+                :rules="formData.localSsPort.rule"
+                type="number"
+                variant="underlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="3" md="3" class="flex-items-center" v-if="formData.localSsServer.select">
+            <v-text-field
+                label="密码"
+                placeholder=""
+                v-model="formData.localSsPassword.value"
+                :rules="formData.localSsPassword.rule"
+                variant="underlined"
+            ></v-text-field>
+          </v-col>
+        </v-row>
 
+        <v-row>
+          <v-col cols="12" md="12"><b>日志</b></v-col>
+        </v-row>
         <v-row>
           <v-col cols="3" md="3">
             <v-select
@@ -156,13 +218,15 @@
             <text class="dashed-x pointer overflow-hidden" @click="copyToClipboard(formData.logPath.value)">
               {{ formData.logPath.value }}
             </text>
+            <v-icon icon="visibility" class="mlr6 pointer" @click="$router.push('/log')"></v-icon>
           </v-col>
         </v-row>
 
 
         <v-row>
           <v-col cols="12" md="12" class="d-flex justify-end">
-            <v-btn color="rgb(24, 103, 192)" @click="onClickSubmit">保存</v-btn>
+            <v-btn class="mlr20" color="orange" @click="onClickReset">重置</v-btn>
+            <v-btn class="" color="rgb(24, 103, 192)" @click="onClickSubmit">保存</v-btn>
           </v-col>
         </v-row>
 
@@ -193,8 +257,8 @@
 import {defineComponent, onMounted, ref} from "vue";
 import clipboard from "../common/clipboard.js";
 import MySnackbar from "../components/MySnackbar.vue";
-import {getAppConfig} from "../common/vars.js";
-import {AppConfigUpdate} from "../../wailsjs/go/main/App.js";
+import {setAppConfig} from "../common/vars.js";
+import {AppConfig, AppConfigReset, AppConfigUpdate} from "../../wailsjs/go/main/App.js";
 import MyLoading from "../components/MyLoading.vue";
 
 const refForm = ref(false)
@@ -259,6 +323,48 @@ const formData = ref({
     value: null,
     rule: [],
   },
+
+  localSsServer: {
+    select: 1,
+    items: [
+      {label: '开启', value: 1},
+      {label: '关闭', value: 0},
+    ],
+    rule: [],
+  },
+  localSsPort: {
+    value: null,
+    rule: [],
+  },
+  localSsCipher: {
+    // https://github.com/softwaredownload/openwrt-fanqiang/blob/master/ebook/03.8.md
+    select: 'AES-256-GCM',
+    items: [
+      {label: '(荐) CHACHA20-IETF-POLY1305', value: 'CHACHA20-IETF-POLY1305'},
+      {label: '(荐) AES-128-GCM', value: 'AES-128-GCM'},
+      {label: '(荐) AES-256-GCM', value: 'AES-256-GCM'},
+
+      {label: '(弱) bf-cfb', value: 'bf-cfb'},
+      {label: '(弱) chacha20', value: 'chacha20'},
+      {label: '(弱) salsa20', value: 'salsa20'},
+      {label: '(弱) rc4-md5', value: 'rc4-md5'},
+
+      {label: '(危) aes-128-ctr', value: 'aes-128-ctr'},
+      {label: '(危) aes-192-ctr', value: 'aes-192-ctr'},
+      {label: '(危) aes-256-ctr', value: 'aes-256-ctr'},
+      {label: '(危) aes-128-cfb', value: 'aes-128-cfb'},
+      {label: '(危) aes-192-cfb', value: 'aes-192-cfb'},
+      {label: '(危) aes-256-cfb', value: 'aes-256-cfb'},
+      {label: '(危) chacha20-ietf', value: 'chacha20-ietf'},
+
+    ],
+    rule: [],
+  },
+  localSsPassword: {
+    value: null,
+    rule: [],
+  },
+
   log: {
     select: {label: '关闭日志', value: 0},
     items: [
@@ -289,6 +395,10 @@ const onClickSubmit = async () => {
     local_udp_server: !!formData.value.localUdpServer.select,
     local_udp_server_port: formData.value.localUdpServerPort.value,
     local_udp_server_response: formData.value.localUdpServerResponse.value,
+    local_ss_server: !!formData.value.localSsServer.select,
+    local_ss_port: +formData.value.localSsPort.value,
+    local_ss_cipher: formData.value.localSsCipher.select,
+    local_ss_password: formData.value.localSsPassword.value,
     log: !!formData.value.log.select,
   }).then(resp => {
     console.log('[AppConfigUpdate] resp ', resp)
@@ -296,6 +406,7 @@ const onClickSubmit = async () => {
     refMySnackbar.value.show(err)
   }).finally(() => {
     refMyLoading.value.hide()
+    reloadAppConfig()
   })
 
   // showTipsModal.value=true
@@ -328,20 +439,50 @@ const handleLocalUdp = (port) => {
   return ''
 }
 
+const reloadAppConfig = () => {
+  refMyLoading.value.show()
+  AppConfig().then(resp => {
+    const appConfig = resp
+
+    setAppConfig(appConfig)
+
+    formData.value.apiServer.value = appConfig.api_server
+    formData.value.localWebServer.select = +appConfig.local_web_server
+    formData.value.localWebServerPort.value = +appConfig.local_web_server_port
+    formData.value.localWebServerPath.value = appConfig.local_web_server_path
+    formData.value.localTcpServer.select = +appConfig.local_tcp_server
+    formData.value.localTcpServerPort.value = +appConfig.local_tcp_server_port
+    formData.value.localTcpServerResponse.value = appConfig.local_tcp_server_response
+    formData.value.localUdpServer.select = +appConfig.local_udp_server
+    formData.value.localUdpServerPort.value = +appConfig.local_udp_server_port
+    formData.value.localUdpServerResponse.value = appConfig.local_udp_server_response
+    formData.value.localSsServer.select = +appConfig.local_ss_server
+    formData.value.localSsPort.value = +appConfig.local_ss_port
+    formData.value.localSsCipher.value = appConfig.local_ss_cipher
+    formData.value.localSsPassword.value = appConfig.local_ss_password
+    formData.value.log.select = +appConfig.log
+    formData.value.logPath.value = appConfig.log_path
+
+  }).catch(err => {
+    refMySnackbar.value.show(err)
+  }).finally(() => {
+    refMyLoading.value.hide()
+  })
+}
+
 const onMountedHandler = () => {
-  const appConfig = getAppConfig()
-  formData.value.apiServer.value = appConfig.api_server
-  formData.value.localWebServer.select = +appConfig.local_web_server
-  formData.value.localWebServerPort.value = +appConfig.local_web_server_port
-  formData.value.localWebServerPath.value = appConfig.local_web_server_path
-  formData.value.localTcpServer.select = +appConfig.local_tcp_server
-  formData.value.localTcpServerPort.value = +appConfig.local_tcp_server_port
-  formData.value.localTcpServerResponse.value = appConfig.local_tcp_server_response
-  formData.value.localUdpServer.select = +appConfig.local_udp_server
-  formData.value.localUdpServerPort.value = +appConfig.local_udp_server_port
-  formData.value.localUdpServerResponse.value = appConfig.local_udp_server_response
-  formData.value.log.select = +appConfig.log
-  formData.value.logPath.value = appConfig.log_path
+  reloadAppConfig()
+}
+
+const onClickReset = () => {
+  AppConfigReset().then(resp => {
+    refMySnackbar.value.show('重置完成')
+  }).catch(err => {
+    refMySnackbar.value.show(err)
+  }).finally(() => {
+    refMyLoading.value.hide()
+    reloadAppConfig()
+  })
 }
 
 export default defineComponent({
@@ -354,6 +495,7 @@ export default defineComponent({
       refForm,
       formData,
       onClickSubmit,
+      onClickReset,
       showTipsModal,
       refMySnackbar,
       refMyLoading,

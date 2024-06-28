@@ -343,11 +343,6 @@ func (a *App) startUdpServer() error {
 }
 
 func (a *App) startSsServer() error {
-
-	log2.Println("[a.appConfig.LocalSsCipher]", a.appConfig.LocalSsCipher)
-	log2.Println("[a.appConfig.LocalSsPort]", a.appConfig.LocalSsPort)
-	log2.Println("[a.appConfig.LocalSsPassword]", a.appConfig.LocalSsPassword)
-
 	if slices.Contains([]string{"DUMMY", "AES-128-GCM", "AES-256-GCM", "CHACHA20-IETF-POLY1305"}, strings.ToUpper(a.appConfig.LocalSsCipher)) {
 		// # 只支持：DUMMY/AES-128-GCM/AES-256-GCM/CHACHA20-IETF-POLY1305，因为使用了github.com/shadowsocks/go-shadowsocks2库
 		a._runSsServer()

@@ -11,13 +11,11 @@ type AppConfig struct {
 	LocalUdpServer         bool   `json:"local_udp_server"`
 	LocalUdpServerPort     int    `json:"local_udp_server_port"`
 	LocalUdpServerResponse string `json:"local_udp_server_response"`
-
-	LocalSsServer   bool   `json:"local_ss_server"`
-	LocalSsPort     int    `json:"local_ss_port"`
-	LocalSsPassword string `json:"local_ss_password"`
-	LocalSsCipher   string `json:"local_ss_cipher"`
-
-	Log       bool   `json:"log"`
-	LogPath   string `json:"log_path"`
-	UpdatedAt int64  `json:"updated_at"`
+	LocalSsServer          bool   `json:"local_ss_server"`
+	LocalSsPort            int    `json:"local_ss_port"`
+	LocalSsPassword        string `json:"local_ss_password"`
+	LocalSsCipher          string `json:"local_ss_cipher"`
+	Log                    bool   `json:"log"`
+	LogPath                string `json:"log_path"`
+	UpdatedAt              int64  `json:"updated_at"`
 }

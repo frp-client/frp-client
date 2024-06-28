@@ -141,17 +141,17 @@ func (a *App) initAppConfig() (model.AppConfig, error) {
 			LocalWebServer:         true,
 			LocalWebServerPort:     localWebServerPort,
 			LocalWebServerPath:     utils.AppPath(),
-			LocalTcpServer:         true,
+			LocalTcpServer:         false,
 			LocalTcpServerPort:     16666,
 			LocalTcpServerResponse: "tcp ok",
-			LocalUdpServer:         true,
+			LocalUdpServer:         false,
 			LocalUdpServerPort:     16666,
 			LocalUdpServerResponse: "udp ok",
 
-			LocalSsServer:   true,
+			LocalSsServer:   false,
 			LocalSsPort:     26666,
 			LocalSsCipher:   "AES-256-GCM",
-			LocalSsPassword: a.ClientId()[:6],
+			LocalSsPassword: a.ClientId()[:8],
 
 			Log:       true,
 			LogPath:   utils.AppPath(),
@@ -281,15 +281,36 @@ func (a *App) AppConfigUpdate(appConfig model.AppConfig) error {
 			LocalWebServer:     appConfig.LocalWebServer,
 			LocalWebServerPort: appConfig.LocalWebServerPort,
 			LocalWebServerPath: appConfig.LocalWebServerPath,
-			Log:                appConfig.Log,
-			LogPath:            utils.AppPath(),
-			UpdatedAt:          utils.UnixTimestamp(),
+
+			LocalTcpServer:         appConfig.LocalSsServer,
+			LocalTcpServerPort:     appConfig.LocalTcpServerPort,
+			LocalTcpServerResponse: appConfig.LocalTcpServerResponse,
+			LocalUdpServer:         appConfig.LocalUdpServer,
+			LocalUdpServerPort:     appConfig.LocalSsPort,
+			LocalUdpServerResponse: appConfig.LocalUdpServerResponse,
+			LocalSsServer:          appConfig.LocalSsServer,
+			LocalSsPort:            appConfig.LocalSsPort,
+			LocalSsCipher:          appConfig.LocalSsCipher,
+			LocalSsPassword:        appConfig.LocalSsPassword,
+			Log:                    appConfig.Log,
+			LogPath:                utils.AppPath(),
+			UpdatedAt:              utils.UnixTimestamp(),
 		}
 	} else {
 		config.ApiServer = appConfig.ApiServer
 		config.LocalWebServer = appConfig.LocalWebServer
 		config.LocalWebServerPort = appConfig.LocalWebServerPort
 		config.LocalWebServerPath = appConfig.LocalWebServerPath
+		config.LocalTcpServer = appConfig.LocalTcpServer
+		config.LocalTcpServerPort = appConfig.LocalTcpServerPort
+		config.LocalTcpServerResponse = appConfig.LocalTcpServerResponse
+		config.LocalUdpServer = appConfig.LocalUdpServer
+		config.LocalUdpServerPort = appConfig.LocalUdpServerPort
+		config.LocalUdpServerResponse = appConfig.LocalUdpServerResponse
+		config.LocalSsServer = appConfig.LocalSsServer
+		config.LocalSsPort = appConfig.LocalSsPort
+		config.LocalSsCipher = appConfig.LocalSsCipher
+		config.LocalSsPassword = appConfig.LocalSsPassword
 		config.Log = appConfig.Log
 		config.UpdatedAt = utils.UnixTimestamp()
 	}
@@ -308,6 +329,22 @@ func (a *App) AppConfigUpdate(appConfig model.AppConfig) error {
 
 	a.appConfig = &config
 
+	return nil
+}
+
+func (a *App) AppConfig() model.AppConfig {
+	config, _ := a.checkAppConfig()
+	return config
+}
+
+func (a *App) AppConfigReset() error {
+	if err := os.Remove(a.getTempConfigFile()); err != nil {
+		return err
+	}
+	_, err := a.initAppConfig()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
