@@ -434,11 +434,15 @@ func (a *App) RpcStartUdpServer() error {
 }
 
 func (a *App) RpcStopSsServer() error {
+	defer func() { recover() }()
+	if a.svc.ssTcpServer != nil {
+		_ = (*a.svc.ssTcpServer).Close()
+	}
 	ss.TcpClose()
 	return nil
 }
 
 func (a *App) RpcStartSsServer() error {
-	ss.TcpClose()
+	_ = a.RpcStopSsServer()
 	return a.startSsServer()
 }
