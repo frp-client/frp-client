@@ -319,7 +319,7 @@ func run(port, password string) (ssTcpListener *net.Listener, err error) {
 		var _break = false
 		for {
 			select {
-			case <-ssTcpClose:
+			case <-ssTcpListenerStatus.ChClose:
 				_break = true
 				_ = ln.Close()
 				break

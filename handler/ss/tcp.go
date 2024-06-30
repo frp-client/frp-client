@@ -111,15 +111,15 @@ func tcpRemote(addr string, shadow func(net.Conn) net.Conn) *net.Listener {
 		var _break = false
 		for {
 			select {
-			case <-ssTcpClose:
+			case <-ssTcpListenerStatus.ChClose:
 				_ = l.Close()
 				_break = true
 				break
 			default:
 				c, err := l.Accept()
 				if err != nil {
-					//log.Println(fmt.Sprintf("failed to accept: %v", err))
-					continue
+					log.Println(fmt.Sprintf("failed to accept: %v", err))
+					return
 				}
 
 				go func() {

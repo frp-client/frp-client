@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/frp-client/frp-client/handler/ss"
+	"github.com/frp-client/frp-client/handler/tcp"
+	"github.com/frp-client/frp-client/handler/udp"
 	"github.com/frp-client/frp-client/model"
 	"github.com/frp-client/frp-client/utils"
 	"github.com/frp-client/frp/client"
@@ -290,60 +292,26 @@ func (a *App) startWebServer() error {
 }
 
 func (a *App) startTcpServer() error {
-	defer func() { recover() }()
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", a.appConfig.LocalTcpServerPort))
+	server, err := tcp.StartTcpServer(fmt.Sprintf(":%d", a.appConfig.LocalTcpServerPort), a.appConfig.LocalTcpServerResponse)
 	if err != nil {
-		log2.Println("[本地tcp服务端口被占用]", err.Error())
 		return err
 	}
-	a.svc.tcpServer = &ln
+	a.svc.tcpServer = server
+	tcp.ListenerOpen()
 
-	var buf []byte
-	for {
-		accept, err := ln.Accept()
-		if err != nil {
-			log2.Println("[本地tcp服务Accept]", err.Error())
-			continue
-		}
-		buf = make([]byte, 1024)
-		_, err = accept.Read(buf)
-		if err != nil {
-			log2.Println("[本地tcp服务Read]", err.Error())
-			continue
-		}
-		log2.Println("[本地tcp服务Read]", accept.RemoteAddr().String(), bytes.TrimSpace(buf))
-		_, err = accept.Write([]byte(a.appConfig.LocalTcpServerResponse))
-		if err != nil {
-			log2.Println("[本地tcp服务Write]", err.Error())
-			continue
-		}
-	}
+	return nil
 }
 
 func (a *App) startUdpServer() error {
-	defer func() { recover() }()
-	ln, err := net.ListenUDP("udp", &net.UDPAddr{Port: a.appConfig.LocalUdpServerPort})
+
+	server, err := udp.StartUdpServer(a.appConfig.LocalUdpServerPort, a.appConfig.LocalUdpServerResponse)
 	if err != nil {
-		log2.Println("[本地tcp服务启动失败]", err.Error())
 		return err
 	}
-	a.svc.udpServer = ln
+	a.svc.udpServer = server
+	udp.ListenerOpen()
 
-	var buf []byte
-	for {
-		buf = make([]byte, 1024)
-		_, addr, err := a.svc.udpServer.ReadFromUDP(buf)
-		if err != nil {
-			log2.Println("[本地udp服务Read]", err.Error())
-			continue
-		}
-		log2.Println("[本地udp服务Read]", addr.String(), bytes.TrimSpace(buf))
-		_, err = a.svc.udpServer.WriteToUDP([]byte(a.appConfig.LocalUdpServerResponse), addr)
-		if err != nil {
-			log2.Println("[本地udp服务Write]", err.Error())
-			continue
-		}
-	}
+	return nil
 }
 
 func (a *App) startSsServer() error {
@@ -365,7 +333,7 @@ func (a *App) startSsServer() error {
 		}
 	}
 
-	ss.TcpOpen()
+	ss.TcpListenerOpen()
 
 	return nil
 }
@@ -408,9 +376,11 @@ func (a *App) RpcStartWebServer() error {
 }
 
 func (a *App) RpcStopTcpServer() error {
+	defer func() { recover() }()
 	if a.svc.tcpServer != nil {
 		return (*a.svc.tcpServer).Close()
 	}
+	tcp.ListenerClose()
 	return nil
 }
 
@@ -429,7 +399,9 @@ func (a *App) RpcStopUdpServer() error {
 }
 
 func (a *App) RpcStartUdpServer() error {
-	_ = a.svc.udpServer.Close()
+	if a.svc.udpServer != nil {
+		_ = a.svc.udpServer.Close()
+	}
 	return a.startUdpServer()
 }
 
@@ -438,7 +410,7 @@ func (a *App) RpcStopSsServer() error {
 	if a.svc.ssTcpServer != nil {
 		_ = (*a.svc.ssTcpServer).Close()
 	}
-	ss.TcpClose()
+	ss.TcpListenerClose()
 	return nil
 }
 
