@@ -1,6 +1,6 @@
 name: Wails build
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   build:
@@ -8,9 +8,8 @@ jobs:
       fail-fast: false
       matrix:
         build: [
-          {name: frp-client-${{ matrix.build.platform }}, platform: linux/amd64, os: ubuntu-latest},
-          {name: frp-client-${{ matrix.build.platform }}, platform: windows/amd64, os: windows-latest},
-          #{name: frp-client-${{ matrix.build.platform }}, platform: darwin/universal, os: macos-latest}
+          { name: frp-client, platform: linux/amd64, os: ubuntu-latest },
+          { name: frp-client, platform: windows/amd64, os: windows-latest }
         ]
     runs-on: ${{ matrix.build.os }}
     steps:
