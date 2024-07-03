@@ -8,7 +8,7 @@ require (
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/energye/systray v1.0.2
 	github.com/frp-client/frp v0.0.0-20240617081446-1b311e7adae9
-	github.com/gofiber/fiber/v2 v2.52.4
+	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/labstack/gommon v0.4.0
 	github.com/shadowsocks/go-shadowsocks2 v0.1.5
 	github.com/shadowsocks/shadowsocks-go v0.0.0-20200409064450-3e585ff90601
