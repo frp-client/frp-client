@@ -14,10 +14,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
+	"io/fs"
 	"log"
 	"net"
 	"os"
-	"path"
 	"path/filepath"
 	"time"
 )
@@ -60,8 +60,11 @@ func (a *App) startup(ctx context.Context) {
 	go a.initApp()
 }
 func (a *App) systemTray() {
-	var p = path.Join(utils.AppPath(), "frontend/src/assets/images/instant_mix_24dp.ico")
-	systray.SetIcon(utils.ReadFileAsByte(p))
+	buf, err := fs.ReadFile(embedStatic, "frontend/src/assets/images/instant_mix_24dp.ico")
+	if err != nil {
+		log.Println("[程序托盘icon异常]", err.Error())
+	}
+	systray.SetIcon(buf)
 
 	systray.AddMenuItem("显示", "Show The Window").Click(func() {
 		runtime.Show(a.ctx)

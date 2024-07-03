@@ -12,6 +12,9 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+//go:embed frontend/src/assets
+var embedStatic embed.FS
+
 const (
 	apiServer            = "https://tunnel-api.lixiang4u.xyz:3000"
 	localWebServerPort   = 8090
