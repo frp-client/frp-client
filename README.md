@@ -1,5 +1,11 @@
 # README
 
+## Screenshot
+
+![frp-client](./files/frp-client.png)
+
+![frp-client](./files/frp-client-tunnel-https.png)
+
 ## About
 
 This is the official Wails Vue template.
