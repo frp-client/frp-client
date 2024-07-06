@@ -360,7 +360,7 @@ func (a *App) reloadSettingConfig() {
 
 func (a *App) setupLog() {
 	if a.appConfig.Log == true {
-		var logFile = filepath.Join(a.appConfig.LogPath, fmt.Sprintf("frp-client-%s.log", time.Now().Format("200612")))
+		var logFile = filepath.Join(a.appConfig.LogPath, fmt.Sprintf("frp-client-%s.log", time.Now().Format("20060102")))
 		file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err == nil {
 			log.SetOutput(file)
